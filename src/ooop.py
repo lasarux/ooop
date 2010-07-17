@@ -34,9 +34,9 @@ OPERATORS = {
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', host='localhost'):
-        self.user = user #'admin'
-        self.pwd = pwd #'admin'
-        self.dbname = dbname #'openerp'
+        self.user = user       # default: 'admin'
+        self.pwd = pwd         # default: 'admin'
+        self.dbname = dbname   # default: 'openerp'
         self.host = host
         self.sock = None
         self.uid = None
@@ -141,7 +141,7 @@ class Data:
         if ref:
             self.__ref = ref
         else:
-            self.__ref = '0x%i' % id(self)
+            self.__ref = -id(self)
         
         self.__manager.INSTANCES['%s:%s' % (model, ref)] = self
 
@@ -198,10 +198,16 @@ class Data:
             #elif ttype == 'many2one' or ttype == 'one2many':
             #    if self.__dict__[name]: # REVIEW: to search save method ???
             #        self.__dict__[name].save()
-        if not self.__ref.startswith('0x'):
+        if self.__ref < 0: # new object
             self.__ooop.write(self.model, self.__ref, data)
         else:
             self.__ref = self.__ooop.create(self.model, data)
+            
+    def delete(self):
+        if self.__ref > 0:
+            self.__ooop.unlink(self.model, self.__ref)
+        else:
+            pass # TODO
 
 
     # TODO: to develop a more clever save function
