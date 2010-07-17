@@ -28,7 +28,10 @@ OPERATORS = {
     'lt': '<',
     'lte': '<=',
     'gt': '>',
-    'gte': '>='
+    'gte': '>=',
+    'ne': '!=',
+    'like': 'like',
+    'ilike': 'ilike',
 }
 
 class OOOP:
