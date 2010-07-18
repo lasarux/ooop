@@ -43,7 +43,7 @@ class OOOP:
         self.host = host
         self.commonsock = None
         self.objectsock = None
-        self.printsock = None
+        self.reportsock = None
         self.uid = None
         self.models = {}
         self.connect()
@@ -54,7 +54,7 @@ class OOOP:
         self.commonsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
         self.uid = self.commonsock.login(self.dbname, self.user, self.pwd)
         self.objectsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % self.host)
-        self.printsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/report' % self.host)
+        self.reportsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/report' % self.host)
         
     def create(self, model, data):
         """ create a new register """
