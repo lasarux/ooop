@@ -41,41 +41,44 @@ class OOOP:
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
         self.host = host
-        self.sock = None
+        self.commonsock = None
+        self.objectsock = None
+        self.printsock = None
         self.uid = None
         self.models = {}
         self.connect()
         self.load_models()
 
     def connect(self):
-        """login and socket to xmlrpc object"""
-        self.sock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
-        self.uid = self.sock.login(self.dbname, self.user, self.pwd)
-        self.sock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % self.host)
+        """login and sockets to xmlrpc services: common, object and report"""
+        self.commonsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
+        self.uid = self.commonsock.login(self.dbname, self.user, self.pwd)
+        self.objectsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % self.host)
+        self.printsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/report' % self.host)
         
     def create(self, model, data):
         """ create a new register """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
         
     def unlink(self, model, ids):
         """ remove register """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
 
     def write(self, model, ids, value):
         """ update register """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
 
     def read(self, model, ids, fields=[]):
         """ update register """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
 
     def read_all(self, model, fields=[]):
         """ update register """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
 
     def search(self, model, query):
         """ return ids that match with 'query' """
-        return self.sock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
 
     def all(self, model):
         """ return all ids """
