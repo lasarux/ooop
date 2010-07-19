@@ -53,10 +53,13 @@ class OOOP:
 
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
-        self.commonsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
-        self.uid = self.commonsock.login(self.dbname, self.user, self.pwd)
+        self.uid = self.login(self.dbname, self.user, self.pwd)
         self.objectsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % self.host)
         self.reportsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/report' % self.host)
+    
+    def login(self, dbname, user, pwd):
+        self.commonsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
+        return self.commonsock.login(dbname, user, pwd)
         
     def create(self, model, data):
         """ create a new register """
@@ -229,7 +232,7 @@ class Data:
             #elif ttype == 'many2one' or ttype == 'one2many':
             #    if self.__dict__[name]: # REVIEW: to search save method ???
             #        self.__dict__[name].save()
-        if self.__ref < 0: # new object
+        if self.__ref > 0: # new object
             self.__ooop.write(self.model, self.__ref, data)
         else:
             self.__ref = self.__ooop.create(self.model, data)
