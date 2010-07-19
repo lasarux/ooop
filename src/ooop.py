@@ -137,13 +137,17 @@ class Manager:
         self.INSTANCES = {}
 
     def get(self, ref): # TODO: only ids?
-        return Data(self.model, self, ref)
+        instance = Data(self.model, self, ref)
+        self.INSTANCES['%s:%s' % (self.model, ref)] = instance
+        return instance
 
     def new(self):
         return Data(self.model, self)
         
     def copy(self, ref):
-        return Data(self.model, self, ref, copy=True)
+        instance = Data(self.model, self, ref, copy=True)
+        self.INSTANCES['%s:%s' % (self.model, ref)] = instance
+        return instance
 
     def all(self):
         r = []
@@ -251,12 +255,16 @@ class Data:
             elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
                 if self.__dict__[name]:
                     data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
+                    # update __name and INSTANCES (cache)
                     self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
+                    for i in self.__dict__[name]:
+                        self.__manager.INSTANCES['%s:%s' % (relation, i.__ref)] = i
             elif ttype == 'many2one':
                 if self.__dict__[name]:
-                    data[name] = self.__dict__[name].__ref #[self.__dict__[name].__ref, self.__dict__[name].name]
-                    # update __name too
+                    data[name] = self.__dict__[name].__ref
+                    # update __name and INSTANCES (cache)
                     self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
+                    self.__manager.INSTANCES['%s:%s' % (relation, self.__dict__[name].__ref)] = self.__dict__[name]
 
         if self.__ooop.debug:
             print ">>> data: ", data
@@ -266,13 +274,15 @@ class Data:
             self.__ooop.write(self.model, self.__ref, data)
         else:
             self.__ref = self.__ooop.create(self.model, data)
+        
+        # update cache
+        self.__manager.INSTANCES['%s:%s' % (self.model, self.__ref)] = self
             
     def delete(self):
         if self.__ref > 0:
             self.__ooop.unlink(self.model, self.__ref)
         else:
             pass # TODO
-
 
     # TODO: to develop a more clever save function
     def save_all(self): 
