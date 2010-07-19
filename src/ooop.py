@@ -253,6 +253,6 @@ class Data:
     def __repr__(self):
         """ default representation: <model:id> """
         try:
-            return '<%s:%s "%s"> data instance' % (self.model, self.__ref, self.name)
+            return u'<%s:%s %r> data instance' % (self.model, self.__ref, self.name)
         except:
-            return '<%s:%s> data instance' % (self.model, self.__ref)
+            return u'<%s:%s> data instance' % (self.model, self.__ref)
