@@ -211,7 +211,7 @@ class Data:
         data = self.__ooop.read(self.model, self.__ref)
         self.__data = data # FIXME: only for debugging purposes
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            if ttype == 'one2many' or ttype == 'many2one':
+            if ttype == 'many2one':
                 if data[name]: # TODO: review this
                     self.__dict__['__%s' % name] = data[name]
                     if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
@@ -224,7 +224,7 @@ class Data:
                         self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
                 else:
                     self.__dict__[name] = None # TODO: empty openerp data object
-            elif ttype == 'many2many':
+            elif ttype in ('one2many', 'many2many'):
                 if data[name]:
                     self.__dict__['__%s' % name] = data[name]
                     self.__dict__[name] = []
@@ -236,6 +236,8 @@ class Data:
                             instance = Data(relation, self.__manager, data[name][i])
                             self.__dict__[name].append(instance)
                             self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
+                else:
+                    self.__dict__[name] = None
             else:
                 self.__dict__[name] = data[name]
     
@@ -244,9 +246,9 @@ class Data:
         data = {}
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if not '2' in ttype:
-                if ttype == 'boolean' or self.__dict__[name]: # one2one, many2one, one2many, many2many
+                if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
                     data[name] = self.__dict__[name]
-            elif ttype == 'many2many': # TODO: to ckeck all possible cases
+            elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
                 if self.__dict__[name]:
                     data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
                     self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
@@ -255,11 +257,11 @@ class Data:
                     data[name] = self.__dict__[name].__ref #[self.__dict__[name].__ref, self.__dict__[name].name]
                     # update __name too
                     self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
-            #elif ttype == 'many2one' or ttype == 'one2many':
-            #    if self.__dict__[name]: # REVIEW: to search save method ???
-            #        self.__dict__[name].save()
+
         if self.__ooop.debug:
             print ">>> data: ", data
+
+        # create or write the object
         if self.__ref > 0 and not self.__copy: # same object
             self.__ooop.write(self.model, self.__ref, data)
         else:
