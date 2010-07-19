@@ -214,6 +214,7 @@ class Data:
                         # TODO: use a Manager instance, not Data
                         instance = Data(relation, self.__manager, data[name][0])
                         self.__dict__[name] = instance
+                        self.__dict__['__%s' % name] = data[name]
                         self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
                 else:
                     self.__dict__[name] = None # TODO: empty openerp data object
@@ -224,11 +225,17 @@ class Data:
         """ save attributes object data into openerp """
         data = {}
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            if not '2' in ttype and self.__dict__[name]: # one2one, many2one, one2many, many2many
-                data[name] = self.__dict__[name]
+            if not '2' in ttype:
+                if ttype == 'boolean' or self.__dict__[name]: # one2one, many2one, one2many, many2many
+                    data[name] = self.__dict__[name]
             elif ttype == 'many2many': # TODO: to ckeck all possible cases
                 if self.__dict__[name]:
                     data[name] = [(6, 0, self.__dict__[name])]
+            elif ttype == 'many2one':
+                if self.__dict__[name]:
+                    data[name] = self.__dict__[name].__ref #[self.__dict__[name].__ref, self.__dict__[name].name]
+                    # update __name too
+                    self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
             #elif ttype == 'many2one' or ttype == 'one2many':
             #    if self.__dict__[name]: # REVIEW: to search save method ???
             #        self.__dict__[name].save()
