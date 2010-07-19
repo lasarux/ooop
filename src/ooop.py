@@ -38,11 +38,12 @@ OPERATORS = {
 
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
-    def __init__(self, user='admin', pwd='admin', dbname='openerp', host='localhost'):
+    def __init__(self, user='admin', pwd='admin', dbname='openerp', host='localhost', debug=False):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
         self.host = host
+        self.debug = debug
         self.commonsock = None
         self.objectsock = None
         self.reportsock = None
@@ -140,6 +141,9 @@ class Manager:
 
     def new(self):
         return Data(self.model, self)
+        
+    def copy(self, ref):
+        return Data(self.model, self, ref, copy=True)
 
     def all(self):
         r = []
@@ -168,10 +172,11 @@ class Manager:
 
 
 class Data:
-    def __init__(self, model, manager, ref=None):
+    def __init__(self, model, manager, ref=None, copy=False):
         self.model = model # model name # FIXME!
         self.__manager = manager
         self.__ooop = manager.ooop
+        self.__copy = copy
         if ref:
             self.__ref = ref
         else:
@@ -198,12 +203,13 @@ class Data:
     def init_values(self):
         """ initial values for object """
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            self.__dict__[name] = None
+            self.__dict__[name] = False # TODO: I prefer None here...
 
 
     def get_values(self):
         """ put values into object using field names like attributes """
         data = self.__ooop.read(self.model, self.__ref)
+        self.__data = data # FIXME: only for debugging purposes
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype == 'one2many' or ttype == 'many2one':
                 if data[name]: # TODO: review this
@@ -220,7 +226,7 @@ class Data:
                     self.__dict__[name] = None # TODO: empty openerp data object
             else:
                 self.__dict__[name] = data[name]
-            
+    
     def save(self):
         """ save attributes object data into openerp """
         data = {}
@@ -239,7 +245,9 @@ class Data:
             #elif ttype == 'many2one' or ttype == 'one2many':
             #    if self.__dict__[name]: # REVIEW: to search save method ???
             #        self.__dict__[name].save()
-        if self.__ref > 0: # new object
+        if self.__ooop.debug:
+            print ">>> data: ", data
+        if self.__ref > 0 and not self.__copy: # same object
             self.__ooop.write(self.model, self.__ref, data)
         else:
             self.__ref = self.__ooop.create(self.model, data)
