@@ -213,6 +213,7 @@ class Data:
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype == 'one2many' or ttype == 'many2one':
                 if data[name]: # TODO: review this
+                    self.__dict__['__%s' % name] = data[name]
                     if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
                         #print "***", self.model, name, ttype, relation
                         self.__dict__[name] = self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])]
@@ -220,10 +221,21 @@ class Data:
                         # TODO: use a Manager instance, not Data
                         instance = Data(relation, self.__manager, data[name][0])
                         self.__dict__[name] = instance
-                        self.__dict__['__%s' % name] = data[name]
                         self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
                 else:
                     self.__dict__[name] = None # TODO: empty openerp data object
+            elif ttype == 'many2many':
+                if data[name]:
+                    self.__dict__['__%s' % name] = data[name]
+                    self.__dict__[name] = []
+                    for i in xrange(len(data[name])):
+                        if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
+                            self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])])
+                        else:
+                            # TODO: use a Manager instance, not Data
+                            instance = Data(relation, self.__manager, data[name][i])
+                            self.__dict__[name].append(instance)
+                            self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
                 self.__dict__[name] = data[name]
     
@@ -236,7 +248,8 @@ class Data:
                     data[name] = self.__dict__[name]
             elif ttype == 'many2many': # TODO: to ckeck all possible cases
                 if self.__dict__[name]:
-                    data[name] = [(6, 0, self.__dict__[name])]
+                    data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
+                    self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
             elif ttype == 'many2one':
                 if self.__dict__[name]:
                     data[name] = self.__dict__[name].__ref #[self.__dict__[name].__ref, self.__dict__[name].name]
