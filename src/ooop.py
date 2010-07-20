@@ -36,6 +36,7 @@ OPERATORS = {
     'ilike': 'ilike',
 }
 
+
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', host='localhost', debug=False):
@@ -49,6 +50,7 @@ class OOOP:
         self.reportsock = None
         self.uid = None
         self.models = {}
+        self.fields = {}
         self.connect()
         self.load_models()
 
@@ -175,7 +177,7 @@ class Manager:
         pass # TODO
 
 
-class Data:
+class Data(object):
     def __init__(self, model, manager, ref=None, copy=False):
         self.model = model # model name # FIXME!
         self.__manager = manager
@@ -186,21 +188,24 @@ class Data:
         else:
             self.__ref = -id(self)
         
-        self.__manager.INSTANCES['%s:%s' % (model, ref)] = self
-
-        # dict fields # TODO: to use correct manager to get fields
-        q = [('model','=',model)]
-        model_id = self.__ooop.search(OOOPMODELS, q)
-        model = self.__ooop.read(OOOPMODELS, model_id)[0]
-        fields = self.__ooop.read(OOOPFIELDS, model['field_id'])
-        self.fields = {}
-        for field in fields:
-            self.fields[field['name']] = field
+        self.__manager.INSTANCES['%s:%s' % (self.model, ref)] = self
+        
+        if self.__ooop.fields.has_key(self.model):
+            self.fields = self.__ooop.fields[self.model]
+        else:
+            # dict fields # TODO: to use correct manager to get fields
+            q = [('model','=',self.model)]
+            model_id = self.__ooop.search(OOOPMODELS, q)
+            model = self.__ooop.read(OOOPMODELS, model_id)[0]
+            fields = self.__ooop.read(OOOPFIELDS, model['field_id'])
+            self.fields = {}
+            for field in fields:
+                self.fields[field['name']] = field
+            self.__ooop.fields[self.model] = self.fields
         
         # get current data for this object
         if ref:
             self.get_values()
-            pass
         else:
             self.init_values()
 
@@ -217,14 +222,23 @@ class Data:
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if not ttype in ('one2many', 'many2one', 'many2many'):
                 hasattr(self,name) # use __getattr__ to trigger load
+            else:
+                pass # TODO: to load related fields as proxies to objects
 
     def __getattr__(self, field):
         """ put values into object dynamically """
+        if self.__dict__.has_key(field):
+            return self.__dict__[field]
+        
         try:
             data = {field: self.__data[field]}
         except:
             data = self.__ooop.read(self.model, self.__ref, [field])
-            
+        
+        # TODO: review this... hack?
+        if not self.fields.has_key(field):
+            return None
+
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
@@ -265,7 +279,7 @@ class Data:
         """ save attributes object data into openerp """
         data = {}
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            if self.__dict__.has_key(name): # else keep values in origial object
+            if self.__dict__.has_key(name): # else keep values in original object
                 if not '2' in ttype:
                     if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
                         data[name] = self.__dict__[name]
@@ -294,6 +308,7 @@ class Data:
         
         # update cache
         self.__manager.INSTANCES['%s:%s' % (self.model, self.__ref)] = self
+
             
     def delete(self):
         if self.__ref > 0:
@@ -309,6 +324,8 @@ class Data:
 
     def __repr__(self):
         """ default representation: <model:id> """
+        if self.__ref < 0:
+            return u'<%s> new data instance' % self.model
         try:
             return u'<%s:%s %r> data instance' % (self.model, self.__ref, self.name)
         except:
