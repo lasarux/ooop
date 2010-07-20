@@ -200,71 +200,88 @@ class Data:
         # get current data for this object
         if ref:
             self.get_values()
+            pass
         else:
             self.init_values()
 
-        
+    
     def init_values(self):
         """ initial values for object """
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             self.__dict__[name] = False # TODO: I prefer None here...
 
-
     def get_values(self):
-        """ put values into object using field names like attributes """
+        """ get values of fields with no relations """
         data = self.__ooop.read(self.model, self.__ref)
-        self.__data = data # FIXME: only for debugging purposes
+        self.__data = data
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            if ttype == 'many2one':
-                if data[name]: # TODO: review this
-                    self.__dict__['__%s' % name] = data[name]
-                    if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
-                        #print "***", self.model, name, ttype, relation
-                        self.__dict__[name] = self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])]
+            if not ttype in ('one2many', 'many2one', 'many2many'):
+                hasattr(self,name) # use __getattr__ to trigger load
+
+    def __getattr__(self, field):
+        """ put values into object dynamically """
+        try:
+            data = {field: self.__data[field]}
+        except:
+            data = self.__ooop.read(self.model, self.__ref, [field])
+            
+        name = self.fields[field]['name']
+        ttype = self.fields[field]['ttype']
+        relation = self.fields[field]['relation']
+        
+        #for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
+
+        if ttype == 'many2one':
+            if data[name]: # TODO: review this
+                self.__dict__['__%s' % name] = data[name]
+                if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
+                    #print "***", self.model, name, ttype, relation
+                    self.__dict__[name] = self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])]
+                else:
+                    # TODO: use a Manager instance, not Data
+                    instance = Data(relation, self.__manager, data[name][0])
+                    self.__dict__[name] = instance
+                    self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
+            else:
+                self.__dict__[name] = None # TODO: empty openerp data object
+        elif ttype in ('one2many', 'many2many'):
+            if data[name]:
+                self.__dict__['__%s' % name] = data[name]
+                self.__dict__[name] = []
+                for i in xrange(len(data[name])):
+                    if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
+                        self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])])
                     else:
                         # TODO: use a Manager instance, not Data
-                        instance = Data(relation, self.__manager, data[name][0])
-                        self.__dict__[name] = instance
-                        self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
-                else:
-                    self.__dict__[name] = None # TODO: empty openerp data object
-            elif ttype in ('one2many', 'many2many'):
-                if data[name]:
-                    self.__dict__['__%s' % name] = data[name]
-                    self.__dict__[name] = []
-                    for i in xrange(len(data[name])):
-                        if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
-                            self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])])
-                        else:
-                            # TODO: use a Manager instance, not Data
-                            instance = Data(relation, self.__manager, data[name][i])
-                            self.__dict__[name].append(instance)
-                            self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
-                else:
-                    self.__dict__[name] = None
+                        instance = Data(relation, self.__manager, data[name][i])
+                        self.__dict__[name].append(instance)
+                        self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = data[name]
+                self.__dict__[name] = None
+        else:
+            self.__dict__[name] = data[name]
     
     def save(self):
         """ save attributes object data into openerp """
         data = {}
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            if not '2' in ttype:
-                if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
-                    data[name] = self.__dict__[name]
-            elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
-                if self.__dict__[name]:
-                    data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
-                    # update __name and INSTANCES (cache)
-                    self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
-                    for i in self.__dict__[name]:
-                        self.__manager.INSTANCES['%s:%s' % (relation, i.__ref)] = i
-            elif ttype == 'many2one':
-                if self.__dict__[name]:
-                    data[name] = self.__dict__[name].__ref
-                    # update __name and INSTANCES (cache)
-                    self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
-                    self.__manager.INSTANCES['%s:%s' % (relation, self.__dict__[name].__ref)] = self.__dict__[name]
+            if self.__dict__.has_key(name): # else keep values in origial object
+                if not '2' in ttype:
+                    if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
+                        data[name] = self.__dict__[name]
+                elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
+                    if self.__dict__[name]:
+                        data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
+                        # update __name and INSTANCES (cache)
+                        self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
+                        for i in self.__dict__[name]:
+                            self.__manager.INSTANCES['%s:%s' % (relation, i.__ref)] = i
+                elif ttype == 'many2one':
+                    if self.__dict__[name]:
+                        data[name] = self.__dict__[name].__ref
+                        # update __name and INSTANCES (cache)
+                        self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
+                        self.__manager.INSTANCES['%s:%s' % (relation, self.__dict__[name].__ref)] = self.__dict__[name]
 
         if self.__ooop.debug:
             print ">>> data: ", data
