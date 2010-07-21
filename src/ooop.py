@@ -64,7 +64,7 @@ class OOOP:
         self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
     
     def login(self, dbname, user, pwd):
-        self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/xmlrpc/common' % (self.uri, self.port))
+        self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
         
     def create(self, model, data):
