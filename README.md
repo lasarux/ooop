@@ -1,4 +1,4 @@
-<img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" />
+<img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" width="100px" height="100px" />
 
 **Warning: this is a very initial release.**
 
@@ -6,17 +6,17 @@
 Contacting us:
 --------------------
 
-Discussion group:  [GOOGLE GROUPS](http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
+Discussion group:  [openerp-ooop](http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
 Post Issues on github: [GITHUB Issues](http://github.com/lasarux/ooop/issues)
   
 
-Examples (with ipython):
+Examples (python console):
 ========================
 
 Connecting to server
 --------------------
-  from ooop import OOOP
-  o = OOOP(dbname='demo')
+  <pre><code>from ooop import OOOP
+  o = OOOP(dbname='demo')</code></pre>
 
 
 Retrieving all from model
@@ -41,7 +41,7 @@ Accesing attributes
   n = o.res_partner.get(1)
   print n.name
 
-or in realted objects
+or in related objects
   
   print n.address.name
 
