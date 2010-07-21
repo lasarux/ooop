@@ -160,8 +160,8 @@ class List:
         else:
             instance = Data(self.manager.model, self.manager, self.objects[offset])
             self.manager.INSTANCES['%s:%s' % (self.manager.model, self.objects[offset])] = instance # TODO: method to add instances
-            self.list[offset] = instance
-            return self.list[offset]
+            self.objects[offset] = instance
+            return self.objects[offset]
 
     def __len__(self):
         return len(self.objects)
@@ -203,10 +203,7 @@ class Manager:
                 key = key[:i]
             q.append(('%s' % key, op, '%s' % value))
                     
-        r = []
-        for i in self.ooop.search(self.model, q):
-            r.append(self.get(i))
-        return r
+        return List(self, self.ooop.search(self.model, q))
 
     def exclude(self, *args, **kargs):
         pass # TODO
