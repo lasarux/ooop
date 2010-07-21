@@ -1,4 +1,4 @@
-<img src="http://openerp-ooop.googlegroups.com/web/ooop.png?gda=CSDk_TsAAADhY3dFLxd-kJv14S9Xe0lb4qCAreyIZsIHighSi4yLhODYe-0-CHm8xpjGNvRBP2sGRdr3QrylPkw2aRbXD_gF" />
+<img src="http://github.com/lasarux/ooop/blob/master/artwork/ooop.png" />
 
 Warning: this is a very initial release.
 
@@ -6,8 +6,8 @@ Warning: this is a very initial release.
 Contacting us:
 --------------------
 
-Discussion group:  [GOOGLE GROUPS] (http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
-Post Issues on github [GITHUB Issues] (http://github.com/lasarux/ooop/issues)
+Discussion group:  [GOOGLE GROUPS](http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
+Post Issues on github: [GITHUB Issues](http://github.com/lasarux/ooop/issues)
   
 
 Examples (with ipython):
