@@ -39,11 +39,13 @@ OPERATORS = {
 
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
-    def __init__(self, user='admin', pwd='admin', dbname='openerp', host='localhost', debug=False):
+    def __init__(self, user='admin', pwd='admin', dbname='openerp', 
+                 uri='http://localhost', port=8069, debug=False):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
-        self.host = host
+        self.uri = uri
+        self.port = port
         self.debug = debug
         self.commonsock = None
         self.objectsock = None
@@ -57,11 +59,11 @@ class OOOP:
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
         self.uid = self.login(self.dbname, self.user, self.pwd)
-        self.objectsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/object' % self.host)
-        self.reportsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/report' % self.host)
+        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port))
+        self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
     
     def login(self, dbname, user, pwd):
-        self.commonsock = xmlrpclib.ServerProxy('http://%s:8069/xmlrpc/common' % self.host)
+        self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
         
     def create(self, model, data):
