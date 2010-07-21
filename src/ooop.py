@@ -23,6 +23,7 @@
 import xmlrpclib
 import time
 import base64
+import types
 
 OOOPMODELS = 'ir.model'
 OOOPFIELDS = '%s.fields' % OOOPMODELS
@@ -134,6 +135,40 @@ class OOOP:
         else:
             return report['result']
 
+# reference: http://www.java2s.com/Code/Python/Class/MyListinitaddmulgetitemlengetslice.htm
+class List:
+    def __init__(self, manager, values = []):
+        self.manager = manager
+        self.objects = values
+        self.index = -1
+
+    def __iter__(self):
+        return self
+ 
+    def next(self):
+        self.index += 1
+        if self.index == len(self.objects):
+            raise StopIteration
+        return self.__getitem__(self.index)
+
+    def __getslice__(self, low, high):
+        return List(self.manager, self.objects[low:high])
+
+    def __getitem__(self, offset):
+        if type(self.objects[offset]) != types.IntType:
+            return self.objects[offset]
+        else:
+            instance = Data(self.manager.model, self.manager, self.objects[offset])
+            self.manager.INSTANCES['%s:%s' % (self.manager.model, self.objects[offset])] = instance # TODO: method to add instances
+            self.list[offset] = instance
+            return self.list[offset]
+
+    def __len__(self):
+        return len(self.objects)
+        
+    def __repr__(self):
+        return '<Objects from %s> %i elements' % (self.manager.model, len(self.objects))
+
 class Manager:
     def __init__(self, model, ooop):
         self.model = model
@@ -154,10 +189,8 @@ class Manager:
         return instance
 
     def all(self):
-        r = []
-        for i in self.ooop.all(self.model):
-            r.append(self.get(i))
-        return r
+        ids = self.ooop.all(self.model)
+        return List(self, ids)
 
     def filter(self, *args, **kargs):
         q = [] # query dict
@@ -211,11 +244,13 @@ class Data(object):
         else:
             self.init_values()
 
-    
     def init_values(self):
         """ initial values for object """
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-            self.__dict__[name] = False # TODO: I prefer None here...
+            if ttype in ('one2many', 'many2many'): # these types use a list of objects
+                self.__dict__[name] = []
+            else:
+                self.__dict__[name] = False # TODO: I prefer None here...
 
     def get_values(self):
         """ get values of fields with no relations """
@@ -229,6 +264,11 @@ class Data(object):
 
     def __getattr__(self, field):
         """ put values into object dynamically """
+        #if self.fields[self.model].has_key(field):
+        #    ttype = self.fields[self.model][field]['ttype']
+        #    if ttype in ('many2one', 'many2many'):
+        #        print "FIELD MANY2..."
+        
         if self.__dict__.has_key(field):
             return self.__dict__[field]
         
@@ -273,7 +313,7 @@ class Data(object):
                         self.__dict__[name].append(instance)
                         self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = None
+                self.__dict__[name] = []
         else:
             self.__dict__[name] = data[name]
     
