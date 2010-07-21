@@ -137,9 +137,12 @@ class OOOP:
 
 # reference: http://www.java2s.com/Code/Python/Class/MyListinitaddmulgetitemlengetslice.htm
 class List:
-    def __init__(self, manager, values = []):
+    def __init__(self, manager, values = [], parent=None, low=None, high=None):
         self.manager = manager
         self.objects = values
+        self.parent = parent
+        self.low = low
+        self.high = high
         self.index = -1
 
     def __iter__(self):
@@ -150,9 +153,15 @@ class List:
         if self.index == len(self.objects):
             raise StopIteration
         return self.__getitem__(self.index)
+        
+    def delete(self):
+        if self.parent:
+            objects = self.parent.objects
+            self.parent.objects = objects[:self.low] + objects[self.high:]
+        return self.manager.ooop.unlink(self.manager.model, self.objects)
 
     def __getslice__(self, low, high):
-        return List(self.manager, self.objects[low:high])
+        return List(self.manager, self.objects[low:high], self, low, high)
 
     def __getitem__(self, offset):
         if type(self.objects[offset]) != types.IntType:
