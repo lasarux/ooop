@@ -137,9 +137,13 @@ class OOOP:
 
 # reference: http://www.java2s.com/Code/Python/Class/MyListinitaddmulgetitemlengetslice.htm
 class List:
-    def __init__(self, manager, values = [], parent=None, low=None, high=None):
+    """ An 'intelligent' list """
+    #FIXME: reorder args
+    def __init__(self, ooop, model, objects = [], manager = None, parent=None, low=None, high=None):
+        self.ooop = ooop
+        self.model = model
+        self.objects = objects
         self.manager = manager
-        self.objects = values
         self.parent = parent
         self.low = low
         self.high = high
@@ -158,16 +162,21 @@ class List:
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.manager.ooop.unlink(self.manager.model, self.objects)
-
+        return self.ooop.unlink(self.model, self.objects)
+    
+    def append(self, value):
+        if self.manager:
+            self.manager.INSTANCES['%s:%s' % (self.model, value.__ref)] = value
+        self.objects.append(value)
+    
     def __getslice__(self, low, high):
-        return List(self.manager, self.objects[low:high], self, low, high)
+        return List(self.ooop, self.model, self.objects[low:high], self.manager, self, low, high)
 
     def __getitem__(self, offset):
         if type(self.objects[offset]) != types.IntType:
             return self.objects[offset]
         else:
-            instance = Data(self.manager.model, self.manager, self.objects[offset])
+            instance = Data(self.model, self.manager, self.objects[offset])
             self.manager.INSTANCES['%s:%s' % (self.manager.model, self.objects[offset])] = instance # TODO: method to add instances
             self.objects[offset] = instance
             return self.objects[offset]
@@ -176,7 +185,8 @@ class List:
         return len(self.objects)
         
     def __repr__(self):
-        return '<Objects from %s> %i elements' % (self.manager.model, len(self.objects))
+        return '<Objects from %s> %i elements' % (self.model, len(self.objects))
+
 
 class Manager:
     def __init__(self, model, ooop):
@@ -199,7 +209,7 @@ class Manager:
 
     def all(self):
         ids = self.ooop.all(self.model)
-        return List(self, ids)
+        return List(self.ooop, self.model, ids, self)
 
     def filter(self, *args, **kargs):
         q = [] # query dict
@@ -212,7 +222,7 @@ class Manager:
                 key = key[:i]
             q.append(('%s' % key, op, '%s' % value))
                     
-        return List(self, self.ooop.search(self.model, q))
+        return List(self.ooop, self.model, self.ooop.search(self.model, q), self)
 
     def exclude(self, *args, **kargs):
         pass # TODO
@@ -254,7 +264,7 @@ class Data(object):
         """ initial values for object """
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
-                self.__dict__[name] = []
+                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
             else:
                 self.__dict__[name] = False # TODO: I prefer None here...
 
@@ -267,6 +277,14 @@ class Data(object):
                 hasattr(self,name) # use __getattr__ to trigger load
             else:
                 pass # TODO: to load related fields as proxies to objects
+
+    def __setattr__(self, field, value):
+        if 'fields' in self.__dict__:
+            if self.fields.has_key(field):
+                ttype = self.fields[field]['ttype']
+                if ttype =='many2one':
+                    self.__manager.INSTANCES['%s:%s' % (self.model, value.__ref)] = value
+        self.__dict__[field] = value
 
     def __getattr__(self, field):
         """ put values into object dynamically """
@@ -309,17 +327,17 @@ class Data(object):
         elif ttype in ('one2many', 'many2many'):
             if data[name]:
                 self.__dict__['__%s' % name] = data[name]
-                self.__dict__[name] = []
+                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
                 for i in xrange(len(data[name])):
                     if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
-                        self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])])
+                        self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])], self.__manager)
                     else:
                         # TODO: use a Manager instance, not Data
                         instance = Data(relation, self.__manager, data[name][i])
-                        self.__dict__[name].append(instance)
-                        self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
+                        self.__dict__[name].append(instance, self.__manager)
+                        #self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = []
+                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
         else:
             self.__dict__[name] = data[name]
     
