@@ -1,5 +1,5 @@
 OpenObject On Python
-====================
+====
 
 Warning: this is a very initial release.
 
