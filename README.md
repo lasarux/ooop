@@ -1,74 +1,88 @@
-<img src="http://openerp-ooop.googlegroups.com/web/ooop.png?gda=CSDk_TsAAADhY3dFLxd-kJv14S9Xe0lb4qCAreyIZsIHighSi4yLhODYe-0-CHm8xpjGNvRBP2sGRdr3QrylPkw2aRbXD_gF" />
+<img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" width="150px" height="150px" />
 
-Warning: this is a very initial release.
+**Warning: this is a very initial release.**
 
 
 Contacting us:
 --------------------
 
-Discussion group:  [GOOGLE GROUPS] (http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
-Post Issues on github [GITHUB Issues] (http://github.com/lasarux/ooop/issues)
+Discussion group:  [openerp-ooop](http://groups.google.es/group/openerp-ooop?hl=en&pli=1)
+Post Issues on github: [GITHUB Issues](http://github.com/lasarux/ooop/issues)
   
 
-Examples (with ipython):
+Examples (python console):
 ========================
 
 Connecting to server
 --------------------
-  from ooop import OOOP
-  o = OOOP(dbname='demo')
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+</code></pre>
 
 
 Retrieving all from model
 -------------------------
-
-  from ooop import OOOP
-  o = OOOP(dbname='demo')
-  o.res_partner.all()
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+  >>> o.res_partner.all()
+</code></pre>
 
 Retrieving 1 record from model
 -------------------------
 
-  from ooop import OOOP
-  o = OOOP(dbname='demo')
-  n = o.res_partner.get(1)
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+  >>> n = o.res_partner.get(1)
+</code></pre>
 
 Accesing attributes
 --------------------
 
-  from ooop import OOOP
-  o = OOOP(dbname='demo')
-  n = o.res_partner.get(1)
-  print n.name
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+  >>> n = o.res_partner.get(1)
+  >>> print n.name
+</code></pre>
 
-or in realted objects
+or in related objects
   
-  print n.address.name
-
+<pre><code>
+  >>> print n.address.name
+</code></pre>
 Filtering
 ---------
 
-  o.res_partner.filter(name='Pedro')
+<pre><code>
+  >>> o.res_partner.filter(name='Pedro')
+</code></pre>
 
 
 Creating new
 ------------
 
-  n = res_partner.new()
-  n.name = 'Partner created with OOOP'
-  n.save()
+<pre><code>
+  >>> n = res_partner.new()
+  >>> n.name = 'Partner created with OOOP'
+  >>> n.save()
+</code></pre>
 
-# with related objects
+**with related objects**
 
-  n = res_partner.new()
-  n.name = 'Partner created with OOOP'
+<pre><code>
+  >>> n = res_partner.new()
+  >>> n.name = 'Partner created with OOOP'
 
-  addr = res_partner_addres.new()
-  addr.street = "Testing related objects"
-  addr.save()
+  >>> addr = res_partner_addres.new()
+  >>> addr.street = "Testing related objects"
+  >>> addr.save()
 
-  n.address = [addr]
-  n.save()
+  >>> n.address = [addr]
+  >>> n.save()
+</code></pre>
 
 
 
