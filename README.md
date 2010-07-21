@@ -1,4 +1,4 @@
-<img src="http://github.com/lasarux/ooop/blob/master/artwork/ooop.png" />
+<img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" />
 
 Warning: this is a very initial release.
 
