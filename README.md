@@ -1,6 +1,6 @@
 <img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" />
 
-Warning: this is a very initial release.
+**Warning: this is a very initial release.**
 
 
 Contacting us:
@@ -58,7 +58,7 @@ Creating new
   n.name = 'Partner created with OOOP'
   n.save()
 
-# with related objects
+**with related objects**
 
   n = res_partner.new()
   n.name = 'Partner created with OOOP'
