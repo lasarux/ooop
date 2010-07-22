@@ -66,7 +66,7 @@ Deleting 1 record
 Deleting multiple records
 ---------
 
-100 firsts
+**100 firsts**
 
 <pre><code>
   >>> from ooop import OOOP
@@ -75,7 +75,7 @@ Deleting multiple records
   >>> n[1:100].delete()
 </code></pre>
 
-all
+**all**
 
 <pre><code>
   >>> n[:].delete()
