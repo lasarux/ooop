@@ -53,6 +53,34 @@ or in related objects
 <pre><code>
   >>> print n.address.name
 </code></pre>
+
+Deleting 1 record
+--------
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+  >>> n = o.res_partner.get(1)
+  >>> n.delete()
+</code></pre>
+
+Deleting multiple records
+---------
+
+**100 firsts**
+
+<pre><code>
+  >>> from ooop import OOOP
+  >>> o = OOOP(dbname='demo')
+  >>> n = o.res_partner.all()
+  >>> n[1:100].delete()
+</code></pre>
+
+**all**
+
+<pre><code>
+  >>> n[:].delete()
+</code></pre>
+
 Filtering
 ---------
 
