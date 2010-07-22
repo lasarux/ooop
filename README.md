@@ -84,7 +84,7 @@ Deleting multiple records
 Filtering
 ---------
 
-You can extend arguments using ne, lt, lte, gt, gte, like and ilke:
+You can extend arguments using ***ne***, ***lt***, ***lte***, ***gt***, ***gte***, ***like*** and ***ilike***:
 
 <pre><code>
   >>> o.res_partner.filter(name='Guido')
