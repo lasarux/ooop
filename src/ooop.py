@@ -139,27 +139,29 @@ class OOOP:
 class List:
     """ An 'intelligent' list """
     #FIXME: reorder args
-    def __init__(self, manager, objects = [], parent=None, 
+    def __init__(self, manager, objects = None, parent=None, 
                  low=None, high=None, data=None, model=None):
         self.manager = manager  # List or Manager instance
         if model:
             self.model = model
         else:
             self.model = self.manager._model
-        self.objects = objects
+        if not objects:
+            self.objects = []
         self.parent = parent      # List instance
         self.low = low
         self.high = high
         self.data = data
         self.index = -1
 
-    #def __iter__(self):
-    #    return self
+    def __iter__(self):
+        return self
  
     def next(self):
         self.index += 1
-        #if self.index == len(self.objects):
-        #    raise StopIteration
+        if self.index == len(self.objects):
+            self.index = -1
+            raise StopIteration
         return self.__getitem__(self.index)
         
     def delete(self):
@@ -171,12 +173,16 @@ class List:
     def append(self, value):
         if self.data:
             self.data.INSTANCES['%s:%s' % (self.model, value._ref)] = value
+        print "*************", self.objects, type(self.objects)
         self.objects.append(value)
     
     def __getslice__(self, low, high):
         return List(self.manager, self.objects[low:high], self, low, high, data=self.data)
 
     def __getitem__(self, offset):
+        if not self.objects:
+            return None
+            
         if type(self.objects[offset]) != types.IntType:
             return self.objects[offset]
         else:
@@ -230,7 +236,7 @@ class Manager:
         pass # TODO
         
     def __repr__(self):
-        return '<%s> manager instance' % self.model
+        return '<%s> manager instance' % self._model
 
 
 class Data(object):
@@ -274,6 +280,7 @@ class Data(object):
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
                 self.__dict__[name] = List(self._manager, data=self, model=relation)
+                print "***", name, self.__dict__[name], self.__dict__[name][0]
             else:
                 self.__dict__[name] = False # TODO: I prefer None here...
 
@@ -308,11 +315,10 @@ class Data(object):
         try:
             data = {field: self.__data[field]}
         except:
-            data = self._ooop.read(self._model, self._ref, [field])
-        
-        # TODO: review this... hack?
-        if not self.fields.has_key(field):
-            return None
+            if self.fields.has_key(field):
+                data = self._ooop.read(self._model, self._ref, [field])
+            else:
+                return None
 
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
@@ -339,11 +345,11 @@ class Data(object):
                 self.__dict__[name] = List(self._manager, data=self, model=relation)
                 for i in xrange(len(data[name])):
                     if self.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
-                        self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])], self.__manager)
+                        self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])])
                     else:
                         # TODO: use a Manager instance, not Data
                         instance = Data(self.__manager, data[name][i], data=self, model=relation)
-                        self.__dict__[name].append(instance, self._manager)
+                        self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
                 self.__dict__[name] = List(self._manager, data=self, model=relation)
@@ -358,8 +364,8 @@ class Data(object):
                 if not '2' in ttype:
                     if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
                         data[name] = self.__dict__[name]
-                elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
-                    if self.__dict__[name]:
+                elif ttype in ('one2many', 'many2many'):
+                    if len(self.__dict__[name]) > 0:
                         data[name] = [(6, 0, [i._ref for i in self.__dict__[name]])]
                         # update __name and INSTANCES (cache)
                         self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
