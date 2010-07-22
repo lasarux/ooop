@@ -139,7 +139,7 @@ class OOOP:
 class List:
     """ An 'intelligent' list """
     #FIXME: reorder args
-    def __init__(self, manager, objects = None, parent=None, 
+    def __init__(self, manager, objects=None, parent=None, 
                  low=None, high=None, data=None, model=None):
         self.manager = manager  # List or Manager instance
         if model:
@@ -168,12 +168,11 @@ class List:
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.instance._ooop.unlink(self.instance.model, self.objects)
+        return self.instance._ooop.unlink(self.model, self.objects)
     
     def append(self, value):
         if self.data:
             self.data.INSTANCES['%s:%s' % (self.model, value._ref)] = value
-        print "*************", self.objects, type(self.objects)
         self.objects.append(value)
     
     def __getslice__(self, low, high):
@@ -280,7 +279,6 @@ class Data(object):
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
                 self.__dict__[name] = List(self._manager, data=self, model=relation)
-                print "***", name, self.__dict__[name], self.__dict__[name][0]
             else:
                 self.__dict__[name] = False # TODO: I prefer None here...
 
@@ -324,13 +322,10 @@ class Data(object):
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         
-        #for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
-
         if ttype == 'many2one':
             if data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
                 if self.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
-                    #print "***", self._model, name, ttype, relation
                     self.__dict__[name] = self.INSTANCES['%s:%s' % (relation, data[name][0])]
                 else:
                     # TODO: use a Manager instance, not Data
