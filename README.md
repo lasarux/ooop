@@ -84,7 +84,7 @@ Deleting multiple records
 Filtering
 ---------
 
-You can extend arguments using <pre>__ne</pre> ( != ), <code>__lt</code> ( < ) , <code>__lte</code> ( <= ), <code>__gt</code> ( > ), <code>__gte</code> ( >= ), <code>__like</code> ( SQL LIKE ), <code>__ilike</code> ( SQL_ILIKE ):
+You can extend arguments using ne, lt, lte, gt, gte, like and ilke:
 
 <pre><code>
   >>> o.res_partner.filter(name='Guido')
@@ -93,6 +93,8 @@ You can extend arguments using <pre>__ne</pre> ( != ), <code>__lt</code> ( < ) ,
   >>> o.res_partner.filter(name__lte='Guido')
   >>> o.res_partner.filter(name__gt='Guido')
   >>> o.res_partner.filter(name__gte='Guido')
+  >>> o.res_partner.filter(name__like='Guido')
+  >>> o.res_partner.filter(name__ilike='guido')
 </code></pre>
 
 
