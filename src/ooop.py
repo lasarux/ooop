@@ -148,6 +148,8 @@ class List:
             self.model = self.manager._model
         if not objects:
             self.objects = []
+        else:
+            self.objects = objects
         self.parent = parent      # List instance
         self.low = low
         self.high = high
@@ -168,7 +170,7 @@ class List:
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.instance._ooop.unlink(self.model, self.objects)
+        return self.manager._ooop.unlink(self.model, self.objects)
     
     def append(self, value):
         if self.data:
@@ -176,12 +178,9 @@ class List:
         self.objects.append(value)
     
     def __getslice__(self, low, high):
-        return List(self.manager, self.objects[low:high], self, low, high, data=self.data)
+        return List(self.manager, self.objects[low:high], self, low, high, data=self.data, model=self.model)
 
     def __getitem__(self, offset):
-        if not self.objects:
-            return None
-            
         if type(self.objects[offset]) != types.IntType:
             return self.objects[offset]
         else:
