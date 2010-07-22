@@ -139,46 +139,50 @@ class OOOP:
 class List:
     """ An 'intelligent' list """
     #FIXME: reorder args
-    def __init__(self, ooop, model, objects = [], manager = None, parent=None, low=None, high=None):
-        self.ooop = ooop
-        self.model = model
+    def __init__(self, manager, objects = [], parent=None, 
+                 low=None, high=None, data=None, model=None):
+        self.manager = manager  # List or Manager instance
+        if model:
+            self.model = model
+        else:
+            self.model = self.manager._model
         self.objects = objects
-        self.manager = manager
-        self.parent = parent
+        self.parent = parent      # List instance
         self.low = low
         self.high = high
+        self.data = data
         self.index = -1
 
-    def __iter__(self):
-        return self
+    #def __iter__(self):
+    #    return self
  
     def next(self):
         self.index += 1
-        if self.index == len(self.objects):
-            raise StopIteration
+        #if self.index == len(self.objects):
+        #    raise StopIteration
         return self.__getitem__(self.index)
         
     def delete(self):
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.ooop.unlink(self.model, self.objects)
+        return self.instance._ooop.unlink(self.instance.model, self.objects)
     
     def append(self, value):
-        if self.manager:
-            self.manager.INSTANCES['%s:%s' % (self.model, value.__ref)] = value
+        if self.data:
+            self.data.INSTANCES['%s:%s' % (self.model, value._ref)] = value
         self.objects.append(value)
     
     def __getslice__(self, low, high):
-        return List(self.ooop, self.model, self.objects[low:high], self.manager, self, low, high)
+        return List(self.manager, self.objects[low:high], self, low, high, data=self.data)
 
     def __getitem__(self, offset):
         if type(self.objects[offset]) != types.IntType:
             return self.objects[offset]
         else:
-            instance = Data(self.model, self.manager, self.objects[offset])
-            self.manager.INSTANCES['%s:%s' % (self.manager.model, self.objects[offset])] = instance # TODO: method to add instances
-            self.objects[offset] = instance
+            #if type(data) != Types.StringType: # data != model
+            #    self.data.INSTANCES['%s:%s' % (self.data.model, self.objects[offset])] = instance # TODO: method to add instances
+            self.objects[offset] = Data(self.manager, self.objects[offset], model=self.model)
             return self.objects[offset]
 
     def __len__(self):
@@ -190,26 +194,24 @@ class List:
 
 class Manager:
     def __init__(self, model, ooop):
-        self.model = model
-        self.ooop = ooop
-        self.INSTANCES = {}
+        self._model = model
+        self._ooop = ooop
+        #self.INSTANCES = {}
 
     def get(self, ref): # TODO: only ids?
-        instance = Data(self.model, self, ref)
-        self.INSTANCES['%s:%s' % (self.model, ref)] = instance
-        return instance
+        return Data(self, ref)
+        #self.INSTANCES['%s:%s' % (self.model, ref)] = instance
 
     def new(self):
-        return Data(self.model, self)
+        return Data(self)
         
     def copy(self, ref):
-        instance = Data(self.model, self, ref, copy=True)
-        self.INSTANCES['%s:%s' % (self.model, ref)] = instance
-        return instance
+        return Data(self, ref, copy=True)
+        #self.INSTANCES['%s:%s' % (self.model, ref)] = instance
 
     def all(self):
-        ids = self.ooop.all(self.model)
-        return List(self.ooop, self.model, ids, self)
+        ids = self._ooop.all(self._model)
+        return List(self, ids)
 
     def filter(self, *args, **kargs):
         q = [] # query dict
@@ -222,37 +224,44 @@ class Manager:
                 key = key[:i]
             q.append(('%s' % key, op, '%s' % value))
                     
-        return List(self.ooop, self.model, self.ooop.search(self.model, q), self)
+        return List(self, self._ooop.search(self._model, q))
 
     def exclude(self, *args, **kargs):
         pass # TODO
+        
+    def __repr__(self):
+        return '<%s> manager instance' % self.model
 
 
 class Data(object):
-    def __init__(self, model, manager, ref=None, copy=False):
-        self.model = model # model name # FIXME!
-        self.__manager = manager
-        self.__ooop = manager.ooop
-        self.__copy = copy
-        if ref:
-            self.__ref = ref
+    def __init__(self, manager, ref=None, model=None, copy=False):
+        if not model:
+            self._model = manager._model # model name # FIXME!
         else:
-            self.__ref = -id(self)
+            self._model = model
+        self._manager = manager
+        self._ooop = self._manager._ooop
+        self._copy = copy
+        self.INSTANCES = {}
+        if ref:
+            self._ref = ref
+        else:
+            self._ref = -id(self)
         
-        self.__manager.INSTANCES['%s:%s' % (self.model, ref)] = self
+        self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
         
-        if self.__ooop.fields.has_key(self.model):
-            self.fields = self.__ooop.fields[self.model]
+        if self._ooop.fields.has_key(self._model):
+            self.fields = self._ooop.fields[self._model]
         else:
             # dict fields # TODO: to use correct manager to get fields
-            q = [('model','=',self.model)]
-            model_id = self.__ooop.search(OOOPMODELS, q)
-            model = self.__ooop.read(OOOPMODELS, model_id)[0]
-            fields = self.__ooop.read(OOOPFIELDS, model['field_id'])
+            q = [('model','=',self._model)]
+            model_id = self._ooop.search(OOOPMODELS, q)
+            model = self._ooop.read(OOOPMODELS, model_id)[0]
+            fields = self._ooop.read(OOOPFIELDS, model['field_id'])
             self.fields = {}
             for field in fields:
                 self.fields[field['name']] = field
-            self.__ooop.fields[self.model] = self.fields
+            self._ooop.fields[self._model] = self.fields
         
         # get current data for this object
         if ref:
@@ -264,13 +273,13 @@ class Data(object):
         """ initial values for object """
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
-                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
+                self.__dict__[name] = List(self._manager, data=self, model=relation)
             else:
                 self.__dict__[name] = False # TODO: I prefer None here...
 
     def get_values(self):
         """ get values of fields with no relations """
-        data = self.__ooop.read(self.model, self.__ref)
+        data = self._ooop.read(self._model, self._ref)
         self.__data = data
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if not ttype in ('one2many', 'many2one', 'many2many'):
@@ -283,13 +292,13 @@ class Data(object):
             if self.fields.has_key(field):
                 ttype = self.fields[field]['ttype']
                 if ttype =='many2one':
-                    self.__manager.INSTANCES['%s:%s' % (self.model, value.__ref)] = value
+                    self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
         self.__dict__[field] = value
 
     def __getattr__(self, field):
         """ put values into object dynamically """
-        #if self.fields[self.model].has_key(field):
-        #    ttype = self.fields[self.model][field]['ttype']
+        #if self.fields[self._model].has_key(field):
+        #    ttype = self.fields[self._model][field]['ttype']
         #    if ttype in ('many2one', 'many2many'):
         #        print "FIELD MANY2..."
         
@@ -299,7 +308,7 @@ class Data(object):
         try:
             data = {field: self.__data[field]}
         except:
-            data = self.__ooop.read(self.model, self.__ref, [field])
+            data = self._ooop.read(self._model, self._ref, [field])
         
         # TODO: review this... hack?
         if not self.fields.has_key(field):
@@ -314,30 +323,30 @@ class Data(object):
         if ttype == 'many2one':
             if data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
-                if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
-                    #print "***", self.model, name, ttype, relation
-                    self.__dict__[name] = self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])]
+                if self.INSTANCES.has_key('%s:%i' % (relation, data[name][0])):
+                    #print "***", self._model, name, ttype, relation
+                    self.__dict__[name] = self.INSTANCES['%s:%s' % (relation, data[name][0])]
                 else:
                     # TODO: use a Manager instance, not Data
-                    instance = Data(relation, self.__manager, data[name][0])
+                    instance = Data(self._manager, data[name][0], data=self)
                     self.__dict__[name] = instance
-                    self.__manager.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
+                    self.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
             else:
                 self.__dict__[name] = None # TODO: empty openerp data object
         elif ttype in ('one2many', 'many2many'):
             if data[name]:
                 self.__dict__['__%s' % name] = data[name]
-                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
+                self.__dict__[name] = List(self._manager, data=self, model=relation)
                 for i in xrange(len(data[name])):
-                    if self.__manager.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
-                        self.__dict__[name].append(self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])], self.__manager)
+                    if self.INSTANCES.has_key('%s:%i' % (relation, data[name][i])):
+                        self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])], self.__manager)
                     else:
                         # TODO: use a Manager instance, not Data
-                        instance = Data(relation, self.__manager, data[name][i])
-                        self.__dict__[name].append(instance, self.__manager)
-                        #self.__manager.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
+                        instance = Data(self.__manager, data[name][i], data=self, model=relation)
+                        self.__dict__[name].append(instance, self._manager)
+                        #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = List(self.__ooop, relation, manager=self.__manager)
+                self.__dict__[name] = List(self._manager, data=self, model=relation)
         else:
             self.__dict__[name] = data[name]
     
@@ -351,48 +360,53 @@ class Data(object):
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'): # TODO: to ckeck all possible cases
                     if self.__dict__[name]:
-                        data[name] = [(6, 0, [i.__ref for i in self.__dict__[name]])]
+                        data[name] = [(6, 0, [i._ref for i in self.__dict__[name]])]
                         # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [i.__ref for i in self.__dict__[name]] # REVIEW: two loops?
+                        self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
                         for i in self.__dict__[name]:
-                            self.__manager.INSTANCES['%s:%s' % (relation, i.__ref)] = i
+                            self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                 elif ttype == 'many2one':
                     if self.__dict__[name]:
-                        data[name] = self.__dict__[name].__ref
+                        data[name] = self.__dict__[name]._ref
                         # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [self.__dict__[name].__ref, self.__dict__[name].name]
-                        self.__manager.INSTANCES['%s:%s' % (relation, self.__dict__[name].__ref)] = self.__dict__[name]
+                        self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
+                        self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
 
-        if self.__ooop.debug:
+        if self._ooop.debug:
             print ">>> data: ", data
 
         # create or write the object
-        if self.__ref > 0 and not self.__copy: # same object
-            self.__ooop.write(self.model, self.__ref, data)
+        if self._ref > 0 and not self._copy: # same object
+            self._ooop.write(self._model, self._ref, data)
         else:
-            self.__ref = self.__ooop.create(self.model, data)
+            self._ref = self._ooop.create(self._model, data)
         
         # update cache
-        self.__manager.INSTANCES['%s:%s' % (self.model, self.__ref)] = self
+        self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
 
             
     def delete(self):
-        if self.__ref > 0:
-            self.__ooop.unlink(self.model, self.__ref)
+        if self._ref > 0:
+            self._ooop.unlink(self._model, self._ref)
         else:
             pass # TODO
 
     # TODO: to develop a more clever save function
     def save_all(self): 
         """ save related instances """
-        for i in self.__manager.INSTANCES.values():
-            i.save()
+        for key, instance in self.INSTANCES.items():
+            if instance != self: # save self at the end
+                instance.save()
+            # updating INSTANCES
+            self.INSTANCES.pop(key)
+            self.INSTANCES['%s:%s' % (instance._model, instance._ref)] = instance
+        self.save()
 
     def __repr__(self):
         """ default representation: <model:id> """
-        if self.__ref < 0:
-            return u'<%s> new data instance' % self.model
+        if self._ref < 0:
+            return u'<%s> new data instance' % self._model
         try:
-            return u'<%s:%s %r> data instance' % (self.model, self.__ref, self.name)
+            return u'<%s:%s %r> data instance' % (self._model, self._ref, self.name)
         except:
-            return u'<%s:%s> data instance' % (self.model, self.__ref)
+            return u'<%s:%s> data instance' % (self._model, self._ref)
