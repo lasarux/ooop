@@ -3,7 +3,7 @@ import fudge
 import xmlrpclib
 from ooop import OOOP
 
-RESPONSE_MODELS = [
+RESPONSE_IRMODEL = [
     {'info': False, 
      'access_ids': [60, 61], 
      'name': 'Partner', 
@@ -12,12 +12,12 @@ RESPONSE_MODELS = [
      'model': 'res.partner', 
      'id': 58},
     {'info': False, 
-    'access_ids': [62, 63], 
-    'name': 'Partner Addresses', 
-    'field_id': [442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458], 
-    'state': 'base', 
-    'model': 'res.partner.address', 
-    'id': 59}
+     'access_ids': [62, 63], 
+     'name': 'Partner Addresses', 
+     'field_id': [442, 443, 444, 445, 446, 447, 448, 449, 450, 451, 452, 453, 454, 455, 456, 457, 458], 
+     'state': 'base', 
+     'model': 'res.partner.address', 
+     'id': 59}
 ]
 
 class TestOOOP(unittest.TestCase):
@@ -28,7 +28,7 @@ class TestOOOP(unittest.TestCase):
         fake_api = (
             fake_setup.returns_fake()
             .expects('login').with_arg_count(3)
-            .provides('execute').returns(RESPONSE_MODELS)
+            .provides('execute').returns(RESPONSE_IRMODEL)
         )
         self.patched = fudge.patch_object(xmlrpclib, 'ServerProxy', fake_setup)
 
