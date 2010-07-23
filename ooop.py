@@ -25,6 +25,11 @@ import time
 import base64
 import types
 
+__author__ = "Pedro Gracia <lasarux@neuroomante.com>"
+__license__ = "GPLv3+"
+__version__ = "0.1.0"
+
+
 OOOPMODELS = 'ir.model'
 OOOPFIELDS = '%s.fields' % OOOPMODELS
 OPERATORS = {
