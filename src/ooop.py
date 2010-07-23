@@ -109,7 +109,11 @@ class OOOP:
         models = self.read_all(OOOPMODELS)
         for model in models:
             self.models[model['model']] = model
-            self.__dict__[model['model'].replace('.', '_')] = Manager(model['model'], self)
+            self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
+
+    @staticmethod
+    def normalize_model_name(name):
+        return "".join(["%s" % k.capitalize() for k in name.split('.')])
 
     def report(self, model, ref, report_type='pdf'):
         """ return a report """
