@@ -1,1 +1,1 @@
-include src/ooop.py src/test.py setup.py MANIFEST.in COPYING AUTHORS README.md
+include ooop.py test.py setup.py MANIFEST.in COPYING AUTHORS README.md
