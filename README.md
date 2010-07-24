@@ -112,11 +112,6 @@ Creating new
   >>> n.save()
 </code></pre>
 
-<pre><code>
-  >>> m = [ResPartnerAddress.new(name='New Address', active=True)]
-  >>> n = ResPartner.new(name='Guido', address=m, active=True)
-  >>> n.save_all()
-</code></pre>
 
 **with related objects**
 
@@ -133,3 +128,8 @@ To save all related objects of an object:
   >>> n.save_all()
 </pre></code>
 
+<pre><code>
+  >>> m = [ResPartnerAddress.new(name='New Address', street='New Street', active=True)]
+  >>> n = ResPartner.new(name='Guido', address=m, active=True)
+  >>> n.save_all()
+</code></pre>
