@@ -78,13 +78,13 @@ Deleting multiple records
 **all**
 
 <pre><code>
-  >>> n[:].delete()
+  >>> n.delete()
 </code></pre>
 
 Filtering
 ---------
 
-You can extend arguments using ***ne***, ***lt***, ***lte***, ***gt***, ***gte***, ***like*** and ***ilike***:
+You can extend arguments using **ne**, **lt**, **lte**, **gt**, **gte**, **like** and **ilike**:
 
 <pre><code>
   >>> o.ResPartner.filter(name='Guido')
@@ -105,6 +105,17 @@ Creating new
   >>> n = ResPartner.new()
   >>> n.name = 'Partner created with OOOP'
   >>> n.save()
+</code></pre>
+
+<pre><code>
+  >>> n = ResPartner.new(name='Guido', active=True)
+  >>> n.save()
+</code></pre>
+
+<pre><code>
+  >>> m = [ResPartnerAddress.new(name='New Address', active=True)]
+  >>> n = ResPartner.new(name='Guido', address=m, active=True)
+  >>> n.save_all()
 </code></pre>
 
 **with related objects**

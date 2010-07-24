@@ -215,8 +215,8 @@ class Manager:
         return Data(self, ref)
         #self.INSTANCES['%s:%s' % (self.model, ref)] = instance
 
-    def new(self):
-        return Data(self)
+    def new(self, *args, **kargs):
+        return Data(self, *args, **kargs)
         
     def copy(self, ref):
         return Data(self, ref, copy=True)
@@ -247,7 +247,7 @@ class Manager:
 
 
 class Data(object):
-    def __init__(self, manager, ref=None, model=None, copy=False):
+    def __init__(self, manager, ref=None, model=None, copy=False, *args, **kargs):
         if not model:
             self._model = manager._model # model name # FIXME!
         else:
@@ -280,15 +280,22 @@ class Data(object):
         if ref:
             self.get_values()
         else:
-            self.init_values()
+            self.init_values(*args, **kargs)
 
-    def init_values(self):
+    def init_values(self, *args, **kargs):
         """ initial values for object """
+        keys = kargs.keys()
         for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
-                self.__dict__[name] = List(self._manager, data=self, model=relation)
+                if name in keys:
+                    self.__dict__[name] = List(self._manager, kargs[name], data=self, model=relation)
+                else:
+                    self.__dict__[name] = List(self._manager, data=self, model=relation)
             else:
-                self.__dict__[name] = False # TODO: I prefer None here...
+                if name in keys:
+                    self.__dict__[name] = kargs[name]
+                else:
+                    self.__dict__[name] = False # TODO: I prefer None here...
 
     def get_values(self):
         """ get values of fields with no relations """
