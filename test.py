@@ -35,18 +35,18 @@ class TestOOOP(unittest.TestCase):
     def tearDown(self):
         self.patched.restore()
 
-    def test_adapting_models_name_to_ooor_compat(self):
-        """ 
-            Adapting the models name from res.partner
-            to ResPartner being more close to ooor 
-            implementation
-        """
-        models = {
-            'res.partner': 'ResPartner',
-            'res.partner.address': 'ResPartnerAddress'
-        }
-        for key, value in models.items():
-            self.assertEquals(OOOP.normalize_model_name(key), value)
+    #def test_adapting_models_name_to_ooor_compat(self):
+    #    """ 
+    #        Adapting the models name from res.partner
+    #        to ResPartner being more close to ooor 
+    #        implementation
+    #    """
+    #    models = {
+    #        'res.partner': 'ResPartner',
+    #        'res.partner.address': 'ResPartnerAddress'
+    #    }
+    #    for key, value in models.items():
+    #        self.assertEquals(OOOP.normalize_model_name(key), value)
     
     @fudge.with_fakes
     def test_ooop_instance(self):

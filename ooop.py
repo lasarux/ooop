@@ -116,8 +116,7 @@ class OOOP:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
 
-    @staticmethod
-    def normalize_model_name(name):
+    def normalize_model_name(self, name):
         return "".join(["%s" % k.capitalize() for k in name.split('.')])
 
     def report(self, model, ref, report_type='pdf'):
@@ -224,7 +223,7 @@ class Manager:
 
     def all(self):
         ids = self._ooop.all(self._model)
-        return List(self, ids)
+        return List(self, ids) #manager, object ids
 
     def filter(self, *args, **kargs):
         q = [] # query dict
@@ -285,7 +284,7 @@ class Data(object):
     def init_values(self, *args, **kargs):
         """ initial values for object """
         keys = kargs.keys()
-        for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
+        for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
                 if name in keys:
                     self.__dict__[name] = List(self._manager, kargs[name], data=self, model=relation)
@@ -301,7 +300,7 @@ class Data(object):
         """ get values of fields with no relations """
         data = self._ooop.read(self._model, self._ref)
         self.__data = data
-        for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
+        for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if not ttype in ('one2many', 'many2one', 'many2many'):
                 hasattr(self,name) # use __getattr__ to trigger load
             else:
@@ -358,7 +357,7 @@ class Data(object):
                         self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])])
                     else:
                         # TODO: use a Manager instance, not Data
-                        instance = Data(self.__manager, data[name][i], data=self, model=relation)
+                        instance = Data(self._manager, data[name][i], data=self, model=relation)
                         self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
@@ -369,7 +368,7 @@ class Data(object):
     def save(self):
         """ save attributes object data into openerp """
         data = {}
-        for name,ttype,relation in ((i['name'],i['ttype'],i['relation']) for i in self.fields.values()):
+        for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if self.__dict__.has_key(name): # else keep values in original object
                 if not '2' in ttype:
                     if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
