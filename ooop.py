@@ -38,10 +38,16 @@ OPERATORS = {
     'gt': '>',
     'gte': '>=',
     'ne': '!=',
+    'ne': '<>',
     'like': 'like',
     'ilike': 'ilike',
+    'eq_like': '=like',
+    'not_like': 'not like',
+    'not_ilike':'not ilike',
+    'in': 'in',
+    'not_in': 'not_in',
+    'child_of': 'child of',
 }
-
 
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
