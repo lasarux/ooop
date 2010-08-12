@@ -129,12 +129,12 @@ class OOOP:
         """ return a report """
         # TODO: test this function
         data = {'model': model, 'id': ref[0], 'report_type': report_type}
-        id_report = self.reportsock.report(dbname, uid, pwd, model, ref, data)
+        id_report = self.reportsock.report(self.dbname, self.uid, self.pwd, model, ref, data)
         time.sleep(5)
         state = False
         attempt = 0
         while not state:
-            report = self.reportsock.report_get(dbname, uid, pwd, id_report)
+            report = self.reportsock.report_get(self.dbname, self.uid, self.pwd, id_report)
             state = report['state']
             if not state:
                 time.sleep(1)
@@ -144,7 +144,7 @@ class OOOP:
                 break
         
         if report_type == 'pdf':
-            string_pdf = base64.decodestring()
+            string_pdf = base64.decodestring(report['result'])
             return string_pdf
         else:
             return report['result']
