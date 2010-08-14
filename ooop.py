@@ -372,7 +372,9 @@ class Data(object):
             self.__dict__[name] = data[name]
     
     def save(self):
-        """ save attributes object data into openerp """
+        """ save attributes object data into openerp
+            return: object id """
+        
         data = {}
         for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if self.__dict__.has_key(name): # else keep values in original object
@@ -404,6 +406,7 @@ class Data(object):
         
         # update cache
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
+        return self._ref
 
             
     def delete(self):
