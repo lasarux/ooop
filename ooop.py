@@ -341,7 +341,7 @@ class Data(object):
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
-        
+
         if ttype == 'many2one':
             if data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
@@ -349,7 +349,7 @@ class Data(object):
                     self.__dict__[name] = self.INSTANCES['%s:%s' % (relation, data[name][0])]
                 else:
                     # TODO: use a Manager instance, not Data
-                    instance = Data(self._manager, data[name][0], data=self)
+                    instance = Data(self._manager, data[name][0], relation, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES['%s:%s' % (relation, data[name][0])] = instance
             else:
