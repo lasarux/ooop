@@ -48,10 +48,11 @@ Accesing attributes
   >>> print n.name
 </code></pre>
 
-or in related objects
+or in related objects:
   
 <pre><code>
-  >>> print n.address.name
+  >>> print len(n.address) 
+  >>> print n.address[0].name 
 </code></pre>
 
 Deleting 1 record
