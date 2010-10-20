@@ -27,7 +27,7 @@ import types
 
 __author__ = "Pedro Gracia <lasarux@neuroomante.com>"
 __license__ = "GPLv3+"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 
 OOOPMODELS = 'ir.model'
@@ -328,7 +328,6 @@ class Data(object):
         #    ttype = self.fields[self._model][field]['ttype']
         #    if ttype in ('many2one', 'many2many'):
         #        print "FIELD MANY2..."
-        
         if self.__dict__.has_key(field):
             return self.__dict__[field]
         
@@ -343,7 +342,6 @@ class Data(object):
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
-
         if ttype == 'many2one':
             if data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
@@ -371,7 +369,13 @@ class Data(object):
             else:
                 self.__dict__[name] = List(self._manager, data=self, model=relation)
         else:
+            # axelor conector workaround
+            if type(data) == types.ListType:
+                data = data[0]
+                
             self.__dict__[name] = data[name]
+        
+        return self.__dict__[name]
     
     def save(self):
         """ save attributes object data into openerp
