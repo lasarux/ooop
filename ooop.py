@@ -240,10 +240,7 @@ class Manager:
                 i = key.find('__')
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
-            if op in ('in', 'not_in'):
                 q.append(('%s' % key, op, value))
-            else:
-                q.append(('%s' % key, op, '%s' % value))
         return List(self, self._ooop.search(self._model, q))
 
     def exclude(self, *args, **kargs):
