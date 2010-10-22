@@ -1,0 +1,16 @@
+Metadata-Version: 1.0
+Name: ooop
+Version: 0.1.0
+Summary: OpenObject on Python, a library to connect with Open ERP.
+Home-page: UNKNOWN
+Author: Pedro Gracia
+Author-email: lasarux@neuroomante.com
+License: GPLv3+
+Download-URL: https://www.github.com/lasarux/ooop
+Description: UNKNOWN
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: Python Software Foundation License
+Classifier: Programming Language :: Python
+Classifier: Topic :: Software Development :: Libraries :: Python Modules

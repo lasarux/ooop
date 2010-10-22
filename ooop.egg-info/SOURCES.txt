@@ -1,0 +1,6 @@
+ooop.py
+setup.py
+ooop.egg-info/PKG-INFO
+ooop.egg-info/SOURCES.txt
+ooop.egg-info/dependency_links.txt
+ooop.egg-info/top_level.txt
