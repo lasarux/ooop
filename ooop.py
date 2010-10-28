@@ -240,7 +240,7 @@ class Manager:
                 i = key.find('__')
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
-                q.append(('%s' % key, op, value))
+        q.append(('%s' % key, op, value))
         return List(self, self._ooop.search(self._model, q))
 
     def exclude(self, *args, **kargs):
