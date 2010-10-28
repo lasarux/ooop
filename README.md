@@ -97,6 +97,7 @@ You can extend arguments using **ne**, **lt**, **lte**, **gt**, **gte**, **like*
   >>> o.ResPartner.filter(name__like='Guido')
   >>> o.ResPartner.filter(name__ilike='guido')
   >>> o.ResPartner.filter(id__in=[1,2,5,8])
+  >>> o.ResPartner.filter(id__not_in=[1,2,5,8])
 </code></pre>
 
 

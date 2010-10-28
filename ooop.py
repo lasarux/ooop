@@ -45,7 +45,7 @@ OPERATORS = {
     'not_like': 'not like',
     'not_ilike':'not ilike',
     'in': 'in',
-    'not_in': 'not_in',
+    'not_in': 'not in',
     'child_of': 'child of',
 }
 
