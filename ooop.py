@@ -24,6 +24,7 @@ import xmlrpclib
 import time
 import base64
 import types
+import io
 
 __author__ = "Pedro Gracia <lasarux@neuroomante.com>"
 __license__ = "GPLv3+"
@@ -121,6 +122,65 @@ class OOOP:
         for model in models:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
+
+    def export(self, filename):
+        """Export the model to dot file"""
+        #o2m 0..* m2m *..* m2o *..0
+        if filename == "":
+            raise IllegalArgumentError("no filename")
+
+        headtailedge = """
+        edge [
+                        arrowhead = "none"
+
+                        headlabel = "%s"
+                        taillabel = "%s"
+                ]"""
+        content = """
+        digraph G {
+
+        node [ 
+            fontname = "Bitstream Vera Sans"
+            fontsize = 8
+            shape = "record" ]
+
+        %s
+
+        }
+        """
+
+        r = {}
+        models = self.read_all("ir.model.fields") #self.__ooop.IrModelFields.all()
+        for i in models:
+            if not r.has_key(i["model"]):
+                r[i["model"]] = {"name":self.normalize_model_name(i["model"]), "links":{}, "fields":["%s : %s" % (i["name"], i["ttype"])]}
+            else:
+                r[i["model"]]["fields"].append("%s : %s" % (i["name"], i["ttype"]))
+                if i["relation"] <> "":
+                    if not r[i["model"]]["links"].has_key(i["relation"]):
+                       r[i["model"]]["links"][i["relation"]] = i["ttype"]
+        
+        lines = ""
+        for key, value in r.items():
+            flds = "".join(["%s\l" % k for k in value["fields"]])
+            lines += "%s[label=\"{%s|%s}\"]\n" % (value["name"], key, flds)
+            for i in value["links"].keys():
+                if value["links"][i] == "one2many":
+                   edge = headtailedge % ("0..*", "*..0")
+                elif value["links"][i] == "many2one":
+                    edge = headtailedge % ("*..0", "0..*")
+                elif value["links"][i] == "many2many":
+                    edge = headtailedge % ("*..*", "*..*")
+                lines += "%s \n" % edge
+                # print value
+                lines += "%s -> %s\n" % (value["name"], r[i]["name"])
+                # return True
+
+        fileObj = open(filename,"w") # open for for write
+        fileObj.write(content % lines)
+        fileObj.close()        
+
+
 
     def normalize_model_name(self, name):
         return "".join(["%s" % k.capitalize() for k in name.split('.')])
@@ -245,7 +305,7 @@ class Manager:
 
     def exclude(self, *args, **kargs):
         pass # TODO
-        
+
     def __repr__(self):
         return '<%s> manager instance' % self._model
 
