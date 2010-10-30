@@ -146,4 +146,6 @@ Get a model graphviz file in dot, png or jpg:
 o.export(filename="file", filetype="dot", showfields=True)
 </code></pre>
 
+<img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.svg" width="150px" height="150px" />
+
 

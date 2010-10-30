@@ -130,7 +130,7 @@ class OOOP:
         if filename == "":
             raise IllegalArgumentError("no filename")
         
-        if not  filetype in ("dot", "png", "jpg"):
+        if not  filetype in ("dot", "png", "jpg", "svg"):
             raise IllegalArgumentError("filetype only accept dot, png, jpg files")
             
 
@@ -179,6 +179,8 @@ class OOOP:
             graph.write_png("%s.%s" % (filename, filetype))
         elif filetype == "jpg":
             graph.write_jpg("%s.%s" % (filename, filetype))
+        elif filetype == "svg":
+            graph.write_svg("%s.%s" % (filename, filetype))
 
 
     def normalize_model_name(self, name):
