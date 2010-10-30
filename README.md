@@ -105,13 +105,13 @@ Creating new
 ------------
 
 <pre><code>
-  >>> n = ResPartner.new()
+  >>> n = o.ResPartner.new()
   >>> n.name = 'Partner created with OOOP'
   >>> n.save()
 </code></pre>
 
 <pre><code>
-  >>> n = ResPartner.new(name='Guido', active=True)
+  >>> n = o.ResPartner.new(name='Guido', active=True)
   >>> n.save()
 </code></pre>
 
@@ -121,10 +121,10 @@ Creating new
 To save all related objects of an object:
 
 <pre><code>
-  >>> n = ResPartner.new()
+  >>> n = o.ResPartner.new()
   >>> n.name = 'Partner created with OOOP'
 
-  >>> addr = ResPartnerAddress.new()
+  >>> addr = o.ResPartnerAddress.new()
   >>> addr.street = "Testing related objects"
 
   >>> n.address.append(addr)
@@ -132,7 +132,18 @@ To save all related objects of an object:
 </pre></code>
 
 <pre><code>
-  >>> m = [ResPartnerAddress.new(name='New Address', street='New Street', active=True)]
-  >>> n = ResPartner.new(name='Guido', address=m, active=True)
+  >>> m = [o.ResPartnerAddress.new(name='New Address', street='New Street', active=True)]
+  >>> n = o.ResPartner.new(name='Guido', address=m, active=True)
   >>> n.save_all()
 </code></pre>
+
+Export Graph
+------------
+
+Get a model graphviz file in dot, png or jpg:
+ 
+<pre><code>
+o.export(filename="file", filetype="dot", showfields=True)
+</code></pre>
+
+
