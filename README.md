@@ -152,4 +152,4 @@ or simply:
 o.export("file", "png", False)
 </code></pre>
 
-<img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.svg" width="150px" height="150px" />
+<img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.png" width="350px" height="150px" />
