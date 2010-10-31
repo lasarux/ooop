@@ -140,12 +140,16 @@ To save all related objects of an object:
 Export Graph
 ------------
 
-Get a model graphviz file in dot, png or jpg:
+Get a model graphviz file in dot, png, jpg or svg:
  
 <pre><code>
 o.export(filename="file", filetype="dot", showfields=True)
 </code></pre>
 
+or simply:
+
+<pre><code>
+o.export("file", "png", False)
+</code></pre>
+
 <img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.svg" width="150px" height="150px" />
-
-

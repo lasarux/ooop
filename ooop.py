@@ -25,11 +25,16 @@ import time
 import base64
 import types
 import io
-import pydot
+
+# check if pydot is installed
+try:
+    import pydot
+except:
+    pydot = False
 
 __author__ = "Pedro Gracia <lasarux@neuroomante.com>"
 __license__ = "GPLv3+"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 
 OOOPMODELS = 'ir.model'
@@ -124,63 +129,93 @@ class OOOP:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
 
-    def export(self, filename, showfields=True, filetype="dot"):
+    def export(self, filename, filetype, showfields=True):
         """Export the model to dot file"""
         #o2m 0..* m2m *..* m2o *..0
-        if filename == "":
-            raise IllegalArgumentError("no filename")
         
-        if not  filetype in ("dot", "png", "jpg", "svg"):
-            raise IllegalArgumentError("filetype only accept dot, png, jpg files")
-            
+        if not pydot:
+            raise ImportError('no pydot package founded')
+        
+        if filename == "":
+            raise TypeError('no filename')
+        
+        if not filetype in ('dot', 'png', 'jpg', 'svg'):
+            raise TypeError('filetype only accept dot, png, jpg or svg types')
 
         graph = pydot.Dot(graph_type='digraph')
-        graph.set_ratio("compress")
+        graph.set_ratio('compress')
+        
+        HEADER = """<
+        <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR>
+                <TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4">
+                <FONT FACE="Helvetica Bold" COLOR="white">%s</FONT>
+                </TD>
+            </TR>
+        """
+        
+        FIELD = """
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">%s</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">%s</FONT
+            ></TD></TR>
+        """
+        
+        TAIL = """
+        </TABLE>
+        >"""
         
         r = {}
-        models = self.read_all("ir.model.fields") #self.__ooop.IrModelFields.all()
+        models = self.read_all('ir.model.fields') #self.__ooop.IrModelFields.all()
         for i in models:
-            if not r.has_key(i["model"]):
-                r[i["model"]] = {"name":self.normalize_model_name(i["model"]), "links":{}, "fields":["%s : %s" % (i["name"], i["ttype"])]}
+            if not r.has_key(i['model']):
+                r[i['model']] = {
+                    'name': self.normalize_model_name(i['model']), 
+                    'links': {}, 
+                    'fields': [(i["name"], i["ttype"])] #TODO: storage i?
+                }
             else:
-                r[i["model"]]["fields"].append("%s : %s" % (i["name"], i["ttype"]))
-                if i["relation"] <> "":
-                    if not r[i["model"]]["links"].has_key(i["relation"]):
-                       r[i["model"]]["links"][i["relation"]] = i["ttype"]
+                r[i['model']]['fields'].append((i["name"], i["ttype"])) # TODO: storage i?
+                if i['relation']:
+                    if not r[i['model']]['links'].has_key(i['relation']):
+                       r[i['model']]['links'][i['relation']] = i['ttype']
         
         lines = ""
         for key, value in r.items():
-            flds = "".join(["+ %s\l" % k for k in value["fields"]])
             if showfields:
-                labelname = "\"{%s|%s}\"" % (key, flds)
+                fields = ''.join([FIELD % k for k in value['fields']])
             else:
-                labelname = key
-            node = pydot.Node(value["name"], label=labelname)
-            node.set_shape("record")
+                fields = ''
+            label = HEADER % key + fields + TAIL
+            node = pydot.Node(value['name'], label=label)
+            node.set_shape('none')
             graph.add_node(node)
-            for i in value["links"].keys():
-                edge = pydot.Edge(value["name"], r[i]["name"])
-                if value["links"][i] == "one2many":
-                   edge.set_headlabel("0..*")
-                   edge.set_taillabel("*..0")
-                elif value["links"][i] == "many2one":
-                    edge.set_headlabel("*..0")
-                    edge.set_taillabel("0..*")
-                elif value["links"][i] == "many2many":
+            for i in value['links'].keys():
+                edge = pydot.Edge(value['name'], r[i]['name'])
+                if value['links'][i] == 'one2many':
+                   edge.set_headlabel('0..*')
+                   edge.set_taillabel('*..0')
+                elif value['links'][i] == 'many2one':
+                    edge.set_headlabel('*..0')
+                    edge.set_taillabel('0..*')
+                elif value['links'][i] == 'many2many':
                     edge.set_headlabel("*..*")
                     edge.set_taillabel("*..*")
                 
                 graph.add_edge(edge)
                 
-        graph.set_fontsize("8.0")
-        if filetype == "dot":
-            graph.write_dot("%s.%s" % (filename, filetype))
-        elif filetype == "png":
-            graph.write_png("%s.%s" % (filename, filetype))
-        elif filetype == "jpg":
-            graph.write_jpg("%s.%s" % (filename, filetype))
-        elif filetype == "svg":
-            graph.write_svg("%s.%s" % (filename, filetype))
+        graph.set_fontsize('8.0')
+        filename = '%s.%s' % (filename, filetype)
+        if filetype == 'dot':
+            graph.write_dot(filename)
+        elif filetype == 'png':
+            graph.write_png(filename)
+        elif filetype == 'jpg':
+            graph.write_jpg(filename)
+        elif filetype == 'svg':
+            graph.write_svg(filename)
 
 
     def normalize_model_name(self, name):
