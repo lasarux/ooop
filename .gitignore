@@ -2,3 +2,4 @@
 dist
 build
 ooop.egg-info
+.DS_Store
