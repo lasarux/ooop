@@ -56,10 +56,38 @@ OPERATORS = {
     'child_of': 'child of',
 }
 
+class objectsock_mock():
+    """mock for objectsock to be able to use the OOOP as a module inside of openerp"""
+    def __init__(self, parent, cr):
+        self.parent = parent
+        self.cr = cr
+    
+    def execute(self, *args):
+        """mocking execute function"""
+        if len(args) == 7:
+            (dbname, uid, pwd, model, action, vals, fields) = args
+        elif len(args) == 6:
+            (dbname, uid, pwd, model, action, vals) = args
+        
+        o_model = self.parent.pool.get(model)
+        
+        if action == 'create':
+            return o_model.create(self.cr, uid, vals)
+        elif action == 'unlink':
+            return o_model.unlink(self.cr, uid, vals)
+        elif action == 'write':
+            return o_model.write(self.cr, uid, vals, fields)
+        elif action == 'read' and len(args) == 7:
+            return o_model.read(self.cr, uid, vals, fields)
+        elif action == 'read':
+            return o_model.read(self.cr, uid, vals)
+        elif action == 'search':
+            return o_model.search(self.cr, uid, vals)
+
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
-                 uri='http://localhost', port=8069, debug=False):
+                 uri='http://localhost', port=8069, debug=False, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -72,7 +100,15 @@ class OOOP:
         self.uid = None
         self.models = {}
         self.fields = {}
-        self.connect()
+
+        #has to be uid, cr, parent (the openerp model to get the pool)
+        if len(kwargs) == 3:
+            print kwargs
+            self.uid = kwargs['uid']
+            self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
+        else:
+            self.connect()
+        
         self.load_models()
 
     def connect(self):
