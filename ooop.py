@@ -165,7 +165,25 @@ class OOOP:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
 
-    def export(self, filename, filetype, showfields=True):
+    def set_model(self, model, r={}, deep=None):
+        """docstring for set_model"""
+        if not r.has_key(model):
+            r[model] = {
+                'name': self.normalize_model_name(model), 
+                'links': {}, 
+                'fields': [] #TODO: storage i?
+            }
+            flds = self.read(OOOPFIELDS, self.models[model]['field_id'])
+            for fld in flds:
+                r[model]['fields'].append((fld["name"], fld["ttype"]))
+                if fld["ttype"] in ('one2many', 'many2one', 'many2many'):
+                    if deep > 0 and not r[model]['links'].has_key(fld['relation']):
+                       r[model]['links'][fld['relation']] = fld['ttype']
+                       r = self.set_model(fld["relation"], r, deep-1)
+            
+        return r
+        
+    def export(self, filename, filetype, showfields=True, model=None, deep=-1):
         """Export the model to dot file"""
         #o2m 0..* m2m *..* m2o *..0
         
@@ -204,20 +222,15 @@ class OOOP:
         >"""
         
         r = {}
-        models = self.read_all('ir.model.fields') #self.__ooop.IrModelFields.all()
-        for i in models:
-            if not r.has_key(i['model']):
-                r[i['model']] = {
-                    'name': self.normalize_model_name(i['model']), 
-                    'links': {}, 
-                    'fields': [(i["name"], i["ttype"])] #TODO: storage i?
-                }
-            else:
-                r[i['model']]['fields'].append((i["name"], i["ttype"])) # TODO: storage i?
-                if i['relation']:
-                    if not r[i['model']]['links'].has_key(i['relation']):
-                       r[i['model']]['links'][i['relation']] = i['ttype']
-        
+        if not model:
+            models = self.read_all(OOOPMODELS)
+        else:
+            model_id = self.search(OOOPMODELS, [('model','=', model)])
+            models = self.read(OOOPMODELS, model_id)
+
+        for model in models:
+            r = self.set_model(model['model'], r, deep)
+
         lines = ""
         for key, value in r.items():
             if showfields:
@@ -377,6 +390,12 @@ class Manager:
 
     def exclude(self, *args, **kargs):
         pass # TODO
+
+    def export(self, filename=None, filetype="jpg", deep=0):
+        """docstring for export"""
+        if not filename:
+            filename = self._model
+        self._ooop.export(filename=filename, filetype=filetype, model=self._model, deep=deep)
 
     def __repr__(self):
         return '<%s> manager instance' % self._model

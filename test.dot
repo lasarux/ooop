@@ -1,0 +1,477 @@
+digraph G {
+	graph [fontsize="8.0", ratio=compress];
+	node [label="\N"];
+	graph [bb="0,0,388,1220"];
+	ResPartner [label=<
+        <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
+            <TR>
+                <TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4">
+                <FONT FACE="Helvetica Bold" COLOR="white">res.partner</FONT>
+                </TD>
+            </TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">comment</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">text</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">ean13</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">bank_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">child_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">phone</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">address</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">date</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">active</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">boolean</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">lang</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">selection</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">customer</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">boolean</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">city</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">credit_limit</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">float</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">user_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">name</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">title</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">mobile</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">country</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">company_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">email</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">website</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">parent_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">employee</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">boolean</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">supplier</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">boolean</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">category_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">ref</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">events</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">vat</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">emails</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_product_pricelist</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_account_position</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">ref_companies</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_account_payable</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">last_reconciliation_date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">datetime</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">debit</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">float</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_account_receivable</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">credit</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">float</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">debit_limit</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">float</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_payment_term</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">invoice_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">contract_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">section_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">meeting_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">phonecall_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">opportunity_ids</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_stock_supplier</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">property_stock_customer</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">transmition_date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">date</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">agent</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">fiscal_territory</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">risk_type</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">qrenta_code</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_id_document_type</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">economic_activities_number</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">civil_state</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">lastname2</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">lastname1</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">persons_state</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_legal_form</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">selection</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">born_constitution_date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">date</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_nacionality_country</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">many2one</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_exp_date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_internal_number</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">integer</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">holder_vat_exp_date</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">date</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">gender</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">account_holder_type_ownership</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">char</FONT
+            ></TD></TR>
+        
+            <TR><TD ALIGN="LEFT" BORDER="0"
+            ><FONT FACE="Helvetica Bold">accounts_id</FONT
+            ></TD>
+            <TD ALIGN="LEFT"
+            ><FONT FACE="Helvetica Bold">one2many</FONT
+            ></TD></TR>
+        
+        </TABLE>
+        >, shape=none, pos="194,610", width="5.3889", height="16.931"];
+}
