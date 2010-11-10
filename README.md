@@ -143,7 +143,7 @@ Export Graph
 Get a model graphviz file in dot, png, jpg or svg:
  
 <pre><code>
-o.export(filename="file", filetype="dot", showfields=True)
+o.export(filename="file", filetype="dot", showfields=True, model="res.partner", deep=None)
 </code></pre>
 
 or simply:
@@ -151,5 +151,28 @@ or simply:
 <pre><code>
 o.export("file", "png", False)
 </code></pre>
+
+also you can do
+
+<pre><code>
+o.ResPartner.export(filename="file", filetype="png", deep=0)
+</code></pre>
+
+Also you can generate a jpg file (res.partner.jpg in the example) with just especific table definition 
+
+<pre><code>
+o.ResPartner.export()
+</code></pre>
+
+but if you want to get deep in the tables just need:
+
+<pre><code>
+o.ResPartner.export(deep=1)
+</code></pre>
+
+
+The deep param its relative to the model param, deep means how far you want to get with the relations.
+
+
 
 <img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.png" width="350px" height="150px" />
