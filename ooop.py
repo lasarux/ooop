@@ -103,7 +103,6 @@ class OOOP:
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
-            print kwargs
             self.uid = kwargs['uid']
             self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
         else:
@@ -326,9 +325,13 @@ class List:
         return self.__getitem__(self.index)
         
     def delete(self):
+        print self.parent
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
+        print self.objects
+        # print "hi"
+        # return True
         return self.manager._ooop.unlink(self.model, self.objects)
     
     def append(self, value):
