@@ -10,6 +10,21 @@ Discussion group:  [openerp-ooop](http://groups.google.es/group/openerp-ooop?hl=
 Post Issues on github: [GITHUB Issues](http://github.com/lasarux/ooop/issues)
   
 
+How to install?
+========================
+
+***python***
+<pre><code>
+$ python setup.py install
+</code></pre>
+
+***jython***
+<pre><code>
+$ jython setup.py install
+</code></pre>
+
+
+
 Examples (python console):
 ========================
 
