@@ -24,7 +24,6 @@ import xmlrpclib
 import time
 import base64
 import types
-import io
 
 # check if pydot is installed
 try:
