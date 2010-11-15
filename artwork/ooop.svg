@@ -36,7 +36,7 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:zoom="1.5966667"
-     inkscape:cx="149.3737"
+     inkscape:cx="39.770362"
      inkscape:cy="148.74739"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -44,9 +44,9 @@
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:window-width="1280"
-     inkscape:window-height="745"
+     inkscape:window-height="721"
      inkscape:window-x="0"
-     inkscape:window-y="27"
+     inkscape:window-y="26"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata7">
@@ -65,102 +65,98 @@
      inkscape:groupmode="layer"
      id="layer1"
      transform="translate(0,-752.36218)">
-    <g
-       id="g2830"
-       transform="translate(-5.1722575,12.494418)">
-      <text
-         xml:space="preserve"
-         style="font-size:173.6131134px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c60000;fill-opacity:1;stroke:#ffffff;stroke-width:6.1980381;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         x="70.542641"
-         y="917.58673"
-         id="text2828"
-         sodipodi:linespacing="125%"><tspan
-           style="stroke-width:6.1980381"
-           sodipodi:role="line"
-           id="tspan2830"
-           x="70.542641"
-           y="917.58673">O</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text2816"
-         y="945.98602"
-         x="29.158922"
-         style="font-size:170.87576294px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.45681429;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         xml:space="preserve"><tspan
-           style="stroke-width:5.45681429"
-           y="945.98602"
-           x="29.158922"
-           id="tspan2818"
-           sodipodi:role="line">O</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:170.87576294px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.45681429;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         x="183.44466"
-         y="942.33557"
-         id="text3616"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3618"
-           x="183.44466"
-           y="942.33557"
-           style="stroke-width:5.45681429">P</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text3612"
-         y="986.62939"
-         x="68.95005"
-         style="font-size:173.6131134px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#c60000;fill-opacity:1;stroke:#ffffff;stroke-width:6.1980381;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         xml:space="preserve"><tspan
-           y="986.62939"
-           x="68.95005"
-           id="tspan3614"
-           sodipodi:role="line"
-           style="stroke-width:6.1980381">O</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text3622"
-         y="972.49554"
-         x="34.321724"
-         style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.03267097;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         xml:space="preserve"><tspan
-           style="stroke-width:5.03267097"
-           y="972.49554"
-           x="34.321724"
-           id="tspan3624"
-           sodipodi:role="line">OpenObject on Python</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         x="34.321724"
-         y="972.49554"
-         id="text3604"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3606"
-           x="34.321724"
-           y="972.49554">OpenObject on Python</tspan></text>
-      <text
-         sodipodi:linespacing="125%"
-         id="text3651"
-         y="972.49554"
-         x="34.321724"
-         style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         xml:space="preserve"><tspan
-           y="972.49554"
-           x="34.321724"
-           id="tspan3653"
-           sodipodi:role="line">OpenObject on Python</tspan></text>
-      <text
-         xml:space="preserve"
-         style="font-size:11.68630981px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
-         x="236.08664"
-         y="982.14197"
-         id="text3669"
-         sodipodi:linespacing="125%"><tspan
-           sodipodi:role="line"
-           id="tspan3671"
-           x="236.08664"
-           y="982.14197">xml-rpc</tspan></text>
-    </g>
+    <text
+       sodipodi:linespacing="125%"
+       id="text2828"
+       y="921.31293"
+       x="53.470592"
+       style="font-size:173.6131134px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ff6600;fill-opacity:1;stroke:#ffffff;stroke-width:6.1980381;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       xml:space="preserve"><tspan
+         y="921.31293"
+         x="53.470592"
+         id="tspan2830"
+         sodipodi:role="line"
+         style="fill:#ff6600;fill-opacity:1;stroke-width:6.1980381">O</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3616"
+       y="954.83002"
+       x="178.2724"
+       style="font-size:170.87576294px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.45681429;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       xml:space="preserve"><tspan
+         style="stroke-width:5.45681429"
+         y="954.83002"
+         x="178.2724"
+         id="tspan3618"
+         sodipodi:role="line">P</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:170.87576294px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.45681429;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       x="23.986664"
+       y="958.48047"
+       id="text2816"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan2818"
+         x="23.986664"
+         y="958.48047"
+         style="stroke-width:5.45681429">O</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:173.6131134px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#ff6600;fill-opacity:1;stroke:#ffffff;stroke-width:6.1980381;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       x="57.393661"
+       y="984.59772"
+       id="text3612"
+       sodipodi:linespacing="125%"><tspan
+         style="fill:#ff6600;fill-opacity:1;stroke-width:6.1980381"
+         sodipodi:role="line"
+         id="tspan3614"
+         x="57.393661"
+         y="984.59772">O</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:5.03267097;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       x="29.149466"
+       y="984.98999"
+       id="text3622"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3624"
+         x="29.149466"
+         y="984.98999"
+         style="stroke-width:5.03267097">OpenObject on Python</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3604"
+       y="984.98999"
+       x="29.149466"
+       style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       xml:space="preserve"><tspan
+         y="984.98999"
+         x="29.149466"
+         id="tspan3606"
+         sodipodi:role="line">OpenObject on Python</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:23.53114891px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       x="29.149466"
+       y="984.98999"
+       id="text3651"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan3653"
+         x="29.149466"
+         y="984.98999">OpenObject on Python</tspan></text>
+    <text
+       sodipodi:linespacing="125%"
+       id="text3669"
+       y="994.63641"
+       x="230.91438"
+       style="font-size:11.68630981px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;font-family:Coolvetica;-inkscape-font-specification:Coolvetica"
+       xml:space="preserve"><tspan
+         y="994.63641"
+         x="230.91438"
+         id="tspan3671"
+         sodipodi:role="line">xml-rpc</tspan></text>
   </g>
 </svg>
