@@ -118,11 +118,14 @@ class OOOP:
     def login(self, dbname, user, pwd):
         self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
-        
+
+    def execute(self, model, *args):
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+
     def create(self, model, data):
         """ create a new register """
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
-        
+
     def unlink(self, model, ids):
         """ remove register """
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
@@ -363,6 +366,9 @@ class Manager:
         self._ooop = ooop
         #self.INSTANCES = {}
 
+    def __getattr__(self, name):
+        return lambda *a: self._ooop.execute(self._model, name, a)
+
     def get(self, ref): # TODO: only ids?
         return Data(self, ref)
         #self.INSTANCES['%s:%s' % (self.model, ref)] = instance
@@ -489,7 +495,9 @@ class Data(object):
             if self.fields.has_key(field):
                 data = self._ooop.read(self._model, self._ref, [field])
             else:
-                return None
+                # Try a custom function
+                return lambda *a: self._ooop.execute(self._model, field,
+                                                     [self._ref], *a)
 
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
