@@ -82,6 +82,7 @@ class objectsock_mock():
             return o_model.read(self.cr, uid, vals)
         elif action == 'search':
             return o_model.search(self.cr, uid, vals)
+        
 
 class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
@@ -142,6 +143,9 @@ class OOOP:
     def search(self, model, query):
         """ return ids that match with 'query' """
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+        
+    def custom_execute(self, model, ids, remote_method, data):
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
 
     def all(self, model):
         """ return all ids """
