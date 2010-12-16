@@ -587,6 +587,10 @@ class Data(object):
             self.INSTANCES.pop(key)
             self.INSTANCES['%s:%s' % (instance._model, instance._ref)] = instance
         self.save()
+    
+    @property
+    def id(self):
+        return self._ref
 
     def __repr__(self):
         """ default representation: <model:id> """
