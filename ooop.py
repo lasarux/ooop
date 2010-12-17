@@ -179,8 +179,8 @@ class OOOP:
                 r[model]['fields'].append((fld["name"], fld["ttype"]))
                 if fld["ttype"] in ('one2many', 'many2one', 'many2many'):
                     if deep > 0 and not r[model]['links'].has_key(fld['relation']):
-                       r[model]['links'][fld['relation']] = fld['ttype']
-                       r = self.set_model(fld["relation"], r, deep-1)
+                        r[model]['links'][fld['relation']] = fld['ttype']
+                        r = self.set_model(fld["relation"], r, deep-1)
             
         return r
         
