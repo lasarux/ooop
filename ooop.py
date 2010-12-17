@@ -365,9 +365,9 @@ class Manager:
         self._model = model
         self._ooop = ooop
         #self.INSTANCES = {}
-
+        
     def __getattr__(self, name):
-        return lambda *a: self._ooop.execute(self._model, name, a)
+        return lambda *a: self._ooop.execute(self._model, name, *a)
 
     def get(self, ref): # TODO: only ids?
         return Data(self, ref)
