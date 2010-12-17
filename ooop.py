@@ -443,7 +443,11 @@ class Data(object):
         if ref:
             self.get_values()
         else:
-            self.init_values(*args, **kargs)
+            # get default values
+            default_values = {}
+            field_names = self.fields.keys()
+            default_values = self._manager.default_get(field_names)
+            self.init_values(**default_values)
 
     def init_values(self, *args, **kargs):
         """ initial values for object """
@@ -454,6 +458,14 @@ class Data(object):
                     self.__dict__[name] = List(self._manager, kargs[name], data=self, model=relation)
                 else:
                     self.__dict__[name] = List(self._manager, data=self, model=relation)
+            elif ttype == 'many2one':
+                if name in keys:
+                    # manager, ref=None, model=None, copy=False
+                    instance = Data(self._manager, kargs[name], relation)
+                    self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
+                    self.__dict__[name] = instance
+                else:
+                    self.__dict__[name] = False
             else:
                 if name in keys:
                     self.__dict__[name] = kargs[name]
