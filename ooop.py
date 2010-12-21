@@ -119,11 +119,14 @@ class OOOP:
     def login(self, dbname, user, pwd):
         self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
-        
+
+    def execute(self, model, *args):
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+
     def create(self, model, data):
         """ create a new register """
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
-        
+
     def unlink(self, model, ids):
         """ remove register """
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
@@ -180,8 +183,8 @@ class OOOP:
                 r[model]['fields'].append((fld["name"], fld["ttype"]))
                 if fld["ttype"] in ('one2many', 'many2one', 'many2many'):
                     if deep > 0 and not r[model]['links'].has_key(fld['relation']):
-                       r[model]['links'][fld['relation']] = fld['ttype']
-                       r = self.set_model(fld["relation"], r, deep-1)
+                        r[model]['links'][fld['relation']] = fld['ttype']
+                        r = self.set_model(fld["relation"], r, deep-1)
             
         return r
         
@@ -190,7 +193,7 @@ class OOOP:
         #o2m 0..* m2m *..* m2o *..0
         
         if not pydot:
-            raise ImportError('no pydot package founded')
+            raise ImportError('no pydot package found')
         
         if filename == "":
             raise TypeError('no filename')
@@ -366,6 +369,9 @@ class Manager:
         self._model = model
         self._ooop = ooop
         #self.INSTANCES = {}
+        
+    def __getattr__(self, name):
+        return lambda *a: self._ooop.execute(self._model, name, *a)
 
     def get(self, ref): # TODO: only ids?
         return Data(self, ref)
@@ -441,7 +447,11 @@ class Data(object):
         if ref:
             self.get_values()
         else:
-            self.init_values(*args, **kargs)
+            # get default values
+            default_values = {}
+            field_names = self.fields.keys()
+            default_values = self._manager.default_get(field_names)
+            self.init_values(**default_values)
 
     def init_values(self, *args, **kargs):
         """ initial values for object """
@@ -452,6 +462,14 @@ class Data(object):
                     self.__dict__[name] = List(self._manager, kargs[name], data=self, model=relation)
                 else:
                     self.__dict__[name] = List(self._manager, data=self, model=relation)
+            elif ttype == 'many2one':
+                if name in keys:
+                    # manager, ref=None, model=None, copy=False
+                    instance = Data(self._manager, kargs[name], relation)
+                    self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
+                    self.__dict__[name] = instance
+                else:
+                    self.__dict__[name] = False
             else:
                 if name in keys:
                     self.__dict__[name] = kargs[name]
@@ -462,7 +480,7 @@ class Data(object):
         """ get values of fields with no relations """
         data = self._ooop.read(self._model, self._ref)
         if not data:
-            raise AttributeError('object with id <%i> doesn\'t exist.' % self._ref)
+            raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
         self.__data = data
         for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if not ttype in ('one2many', 'many2one', 'many2many'):
@@ -493,7 +511,9 @@ class Data(object):
             if self.fields.has_key(field):
                 data = self._ooop.read(self._model, self._ref, [field])
             else:
-                return None
+                # Try a custom function
+                return lambda *a: self._ooop.execute(self._model, field,
+                                                     [self._ref], *a)
 
         name = self.fields[field]['name']
         ttype = self.fields[field]['ttype']
@@ -588,6 +608,10 @@ class Data(object):
             self.INSTANCES['%s:%s' % (instance._model, instance._ref)] = instance
         self.save()
     
+    @property
+    def id(self):
+        return self._ref
+
     @property
     def id(self):
         return self._ref
