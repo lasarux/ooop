@@ -458,7 +458,7 @@ class Data(object):
         """ get values of fields with no relations """
         data = self._ooop.read(self._model, self._ref)
         if not data:
-            raise AttributeError('object with id <%i> doesn\'t exist.' % self._ref)
+            raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
         self.__data = data
         for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if not ttype in ('one2many', 'many2one', 'many2many'):
