@@ -186,7 +186,7 @@ class OOOP:
         #o2m 0..* m2m *..* m2o *..0
         
         if not pydot:
-            raise ImportError('no pydot package founded')
+            raise ImportError('no pydot package found')
         
         if filename == "":
             raise TypeError('no filename')
