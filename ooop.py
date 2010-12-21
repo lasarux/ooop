@@ -429,14 +429,14 @@ class Data(object):
         if self._ooop.fields.has_key(self._model):
             self.fields = self._ooop.fields[self._model]
         else:
-            # dict fields # TODO: to use correct manager to get fields
-            q = [('model','=',self._model)]
-            model_id = self._ooop.search(OOOPMODELS, q)
-            model = self._ooop.read(OOOPMODELS, model_id)[0]
-            fields = self._ooop.read(OOOPFIELDS, model['field_id'])
+            fields = self._manager.fields_get()
             self.fields = {}
-            for field in fields:
-                self.fields[field['name']] = field
+            for field_name, field in fields.items():
+                field['name'] = field_name
+                field['relation'] = field.get('relation', False)
+                field['ttype'] = field['type']
+                del field['type']
+                self.fields[field_name] = field
             self._ooop.fields[self._model] = self.fields
         
         # get current data for this object
