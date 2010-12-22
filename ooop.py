@@ -488,7 +488,7 @@ class Data(object):
         if 'fields' in self.__dict__:
             if self.fields.has_key(field):
                 ttype = self.fields[field]['ttype']
-                if ttype =='many2one':
+                if ttype =='many2one' and value:
                     self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
         self.__dict__[field] = value
 
