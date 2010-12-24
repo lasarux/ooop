@@ -528,7 +528,8 @@ class Data(object):
                     self.__dict__[name] = self.INSTANCES[key]
                 else:
                     # TODO: use a Manager instance, not Data
-                    instance = Data(self._manager, data[name][0], relation, data=self)
+                    instance = Data(Manager(relation, self._ooop),
+                                    data[name][0], relation, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
@@ -536,18 +537,22 @@ class Data(object):
         elif ttype in ('one2many', 'many2many'):
             if data[name]:
                 self.__dict__['__%s' % name] = data[name]
-                self.__dict__[name] = List(self._manager, data=self, model=relation)
+                self.__dict__[name] = List(Manager(relation, self._ooop),
+                                           data=self, model=relation)
                 for i in xrange(len(data[name])):
                     key = '%s:%i' % (relation, data[name][i])
                     if key in self.INSTANCES.keys():
                         self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])])
                     else:
                         # TODO: use a Manager instance, not Data
-                        instance = Data(self._manager, data[name][i], data=self, model=relation)
+                        instance = Data(Manager(relation, self._ooop),
+                                        data[name][i], data=self,
+                                        model=relation)
                         self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = List(self._manager, data=self, model=relation)
+                self.__dict__[name] = List(Manager(relation, self._ooop),
+                                           data=self, model=relation)
         else:
             # axelor conector workaround
             if type(data) == types.ListType:
