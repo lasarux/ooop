@@ -557,7 +557,8 @@ class Data(object):
         for name,ttype,relation in [(i['name'],i['ttype'],i['relation']) for i in self.fields.values()]:
             if self.__dict__.has_key(name): # else keep values in original object
                 if not '2' in ttype:
-                    if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
+                    if ttype in ('boolean', 'float', 'integer') or \
+                    self.__dict__[name]: # many2one, one2many, many2many
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:
