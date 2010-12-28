@@ -31,9 +31,9 @@ try:
 except:
     pydot = False
 
-__author__ = "Pedro Gracia <lasarux@neuroomante.com>"
+__author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.0"
+__version__ = "0.2.1"
 
 
 OOOPMODELS = 'ir.model'
