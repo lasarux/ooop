@@ -249,8 +249,8 @@ class OOOP:
             for i in value['links'].keys():
                 edge = pydot.Edge(value['name'], r[i]['name'])
                 if value['links'][i] == 'one2many':
-                   edge.set_headlabel('0..*')
-                   edge.set_taillabel('*..0')
+                    edge.set_headlabel('0..*')
+                    edge.set_taillabel('*..0')
                 elif value['links'][i] == 'many2one':
                     edge.set_headlabel('*..0')
                     edge.set_taillabel('0..*')
