@@ -433,14 +433,14 @@ class Data(object):
         if self._model in self._ooop.fields.keys():
             self.fields = self._ooop.fields[self._model]
         else:
-            # dict fields # TODO: to use correct manager to get fields
-            q = [('model','=',self._model)]
-            model_id = self._ooop.search(OOOPMODELS, q)
-            model = self._ooop.read(OOOPMODELS, model_id)[0]
-            fields = self._ooop.read(OOOPFIELDS, model['field_id'])
+            fields = self._manager.fields_get()
             self.fields = {}
-            for field in fields:
-                self.fields[field['name']] = field
+            for field_name, field in fields.items():
+                field['name'] = field_name
+                field['relation'] = field.get('relation', False)
+                field['ttype'] = field['type']
+                del field['type']
+                self.fields[field_name] = field
             self._ooop.fields[self._model] = self.fields
         
         # get current data for this object
@@ -494,7 +494,7 @@ class Data(object):
         if 'fields' in self.__dict__:
             if field in self.fields.keys():
                 ttype = self.fields[field]['ttype']
-                if ttype =='many2one':
+                if ttype =='many2one' and value:
                     self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
         self.__dict__[field] = value
 
@@ -566,7 +566,8 @@ class Data(object):
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype:
-                    if ttype == 'boolean' or self.__dict__[name]: # many2one, one2many, many2many
+                    if ttype in ('boolean', 'float', 'integer') or \
+                    self.__dict__[name]: # many2one, one2many, many2many
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:

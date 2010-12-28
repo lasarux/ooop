@@ -3,3 +3,6 @@ dist
 build
 ooop.egg-info
 .DS_Store
+.project
+.pydevproject
+.settings
