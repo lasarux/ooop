@@ -55,6 +55,9 @@ OPERATORS = {
     'child_of': 'child of',
 }
 
+def remove(object):
+    del object
+
 class objectsock_mock():
     """mock for objectsock to be able to use the OOOP as a module inside of openerp"""
     def __init__(self, parent, cr):
@@ -88,7 +91,7 @@ class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
-                 exe=False, **kwargs):
+                 exe=False, active=True, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -96,6 +99,7 @@ class OOOP:
         self.port = port
         self.debug = debug
         self.exe = exe
+        self.active = active
         self.commonsock = None
         self.objectsock = None
         self.reportsock = None
@@ -447,6 +451,9 @@ class Data(object):
             default_values = {}
             field_names = self.fields.keys()
             default_values = self._manager.default_get(field_names)
+            # active by default ?
+            if self._ooop.active:
+                default_values['active'] = True
             self.init_values(**default_values)
 
     def init_values(self, *args, **kargs):
@@ -610,8 +617,9 @@ class Data(object):
     def delete(self):
         if self._ref > 0:
             self._ooop.unlink(self._model, self._ref)
-        else:
-            pass # TODO
+        #else:
+        #    pass # TODO
+        remove(self)
 
     # TODO: to develop a more clever save function
     def save_all(self): 
