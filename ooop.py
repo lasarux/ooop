@@ -127,6 +127,8 @@ class OOOP:
         return self.commonsock.login(dbname, user, pwd)
 
     def execute(self, model, *args):
+        if self.debug:
+            print "DEBUG [execute]:", model, args
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
 
     def create(self, model, data):
@@ -155,6 +157,8 @@ class OOOP:
         
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
+        if self.debug:
+            print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
 
     def all(self, model):
@@ -454,6 +458,7 @@ class Data(object):
             # active by default ?
             if self._ooop.active:
                 default_values['active'] = True
+            default_values.update(**kargs) # initial values from caller
             self.init_values(**default_values)
 
     def init_values(self, *args, **kargs):
