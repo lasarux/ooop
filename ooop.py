@@ -504,10 +504,7 @@ class Data(object):
         else:
             fields = self.fields
         for i in fields:
-            try:
-                print "%s: %s" % (i, self.__dict__[i])
-            except:
-                pass
+            print "%s: %s" % (i, self.__getattr__(i))
 
     def __setattr__(self, field, value):
         if 'fields' in self.__dict__:
@@ -587,9 +584,8 @@ class Data(object):
         for i in self.fields.values():
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if name in self.__dict__.keys(): # else keep values in original object
-                if not '2' in ttype:
-                    if ttype in ('boolean', 'float', 'integer') or \
-                    self.__dict__[name]: # many2one, one2many, many2many
+                if not '2' in ttype: # not one2many, many2one nor many2many
+                    if ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:
@@ -606,7 +602,8 @@ class Data(object):
                         self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
 
         if self._ooop.debug:
-            print ">>> data: ", data
+            print ">>> model:", self._model
+            print ">>> data:", data
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
