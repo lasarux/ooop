@@ -24,6 +24,7 @@ import xmlrpclib
 import time
 import base64
 import types
+from datetime import datetime, date
 
 # check if pydot is installed
 try:
@@ -510,8 +511,9 @@ class Data(object):
         if 'fields' in self.__dict__:
             if field in self.fields.keys():
                 ttype = self.fields[field]['ttype']
-                if ttype =='many2one' and value:
-                    self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
+                if value:
+                    if ttype =='many2one':
+                        self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
         self.__dict__[field] = value
 
     def __getattr__(self, field):
@@ -567,6 +569,10 @@ class Data(object):
             else:
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
+        elif ttype == "datetime" and data[name]:
+            self.__dict__[name] = datetime.strptime(data[name], "%Y-%m-%d %H:%M:%S")
+        elif ttype == "date" and data[name]:
+            self.__dict__[name] = date.strptime(data[name], "%Y-%m-%d")
         else:
             # axelor conector workaround
             if type(data) == types.ListType:
@@ -585,7 +591,11 @@ class Data(object):
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
-                    if ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
+                    if ttype == 'date' and self.__dict__[name]:
+                        data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                    elif ttype == 'datetime' and self.__dict__[name]:
+                        data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
+                    elif ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:
