@@ -572,7 +572,7 @@ class Data(object):
         elif ttype == "datetime" and data[name]:
             self.__dict__[name] = datetime.strptime(data[name], "%Y-%m-%d %H:%M:%S")
         elif ttype == "date" and data[name]:
-            self.__dict__[name] = date.strptime(data[name], "%Y-%m-%d")
+            self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], "%Y-%m-%d").toordinal())
         else:
             # axelor conector workaround
             if type(data) == types.ListType:
