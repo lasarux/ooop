@@ -315,6 +315,7 @@ class OOOP:
 class List:
     """ An 'intelligent' list """
     #FIXME: reorder args
+    #TODO: cache
     def __init__(self, manager, objects=None, parent=None, 
                  low=None, high=None, data=None, model=None):
         self.manager = manager  # List or Manager instance
@@ -389,8 +390,14 @@ class Manager:
     def copy(self, ref):
         return Data(self, ref, copy=True)
 
-    def all(self):
+    def all(self, offset=0, length=999999, as_tuple=False):
         ids = self._ooop.all(self._model)
+        data = self._ooop.read(self._model, ids[offset:length])
+        if as_tuple:
+            items = []
+            for item in data:
+                items.append(Data(self, item["id"], data=item)) #FIXME: item["id"] is redundant
+            return items
         return List(self, ids) #manager, object ids
 
     def filter(self, *args, **kargs):
@@ -419,7 +426,7 @@ class Manager:
 
 
 class Data(object):
-    def __init__(self, manager, ref=None, model=None, copy=False, *args, **kargs):
+    def __init__(self, manager, ref=None, model=None, copy=False, data=None, *args, **kargs):
         if not model:
             self._model = manager._model # model name # FIXME!
         else:
@@ -427,6 +434,7 @@ class Data(object):
         self._manager = manager
         self._ooop = self._manager._ooop
         self._copy = copy
+        self._data = data
         self.INSTANCES = {}
         if ref:
             self._ref = ref
@@ -479,7 +487,7 @@ class Data(object):
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
                     self.__dict__[name] = instance
                 else:
-                    self.__dict__[name] = False
+                    self.__dict__[name] = None
             else:
                 if name in keys:
                     self.__dict__[name] = kargs[name]
@@ -488,10 +496,13 @@ class Data(object):
 
     def get_values(self):
         """ get values of fields with no relations """
-        data = self._ooop.read(self._model, self._ref)
-        if not data:
-            raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
-        self.__data = data
+        if not self._data:
+            data = self._ooop.read(self._model, self._ref)
+            if not data:
+                raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
+            else:
+                self._data = data
+
         for i in self.fields.values():
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if not ttype in ('one2many', 'many2one', 'many2many'):
@@ -522,7 +533,7 @@ class Data(object):
             return self.__dict__[field]
 
         try:
-            data = {field: self.__data[field]}
+            data = {field: self._data[field]}
         except:
             if field in self.fields.keys():
                 data = self._ooop.read(self._model, self._ref, [field])
