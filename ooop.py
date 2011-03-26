@@ -34,7 +34,7 @@ except:
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 
 
 OOOPMODELS = 'ir.model'
@@ -59,33 +59,53 @@ OPERATORS = {
 def remove(object):
     del object
 
+# http://stackoverflow.com/questions/1305532/convert-python-dict-to-object (last one)
+class dict2obj(dict):
+    def __init__(self, dict_):
+        super(dict2obj, self).__init__(dict_)
+        for key in self:
+            item = self[key]
+            if isinstance(item, list):
+                for idx, it in enumerate(item):
+                    if isinstance(it, dict):
+                        item[idx] = dict2obj(it)
+            elif isinstance(item, dict):
+                self[key] = dict2obj(item)
+
+    def __getattr__(self, key):
+        return self[key]
+
 class objectsock_mock():
     """mock for objectsock to be able to use the OOOP as a module inside of openerp"""
     def __init__(self, parent, cr):
         self.parent = parent
         self.cr = cr
     
-    def execute(self, *args):
+    def execute(self, *args, **kargs):
         """mocking execute function"""
         if len(args) == 7:
             (dbname, uid, pwd, model, action, vals, fields) = args
         elif len(args) == 6:
             (dbname, uid, pwd, model, action, vals) = args
+        elif len(args) == 5:
+            (dbname, uid, pwd, model, action) = args
         
-        o_model = self.parent.pool.get(model)
+        _model = self.parent.pool.get(model)
         
         if action == 'create':
-            return o_model.create(self.cr, uid, vals)
+            return _model.create(self.cr, uid, vals)
         elif action == 'unlink':
-            return o_model.unlink(self.cr, uid, vals)
+            return _model.unlink(self.cr, uid, vals)
         elif action == 'write':
-            return o_model.write(self.cr, uid, vals, fields)
+            return _model.write(self.cr, uid, vals, fields)
         elif action == 'read' and len(args) == 7:
-            return o_model.read(self.cr, uid, vals, fields)
+            return _model.read(self.cr, uid, vals, fields)
         elif action == 'read':
-            return o_model.read(self.cr, uid, vals)
+            return _model.read(self.cr, uid, vals)
         elif action == 'search':
-            return o_model.search(self.cr, uid, vals)
+            return _model.search(self.cr, uid, vals)
+        else:
+            return getattr(_model, action)(self.cr, uid) # is callable
         
 
 class OOOP:
@@ -134,26 +154,38 @@ class OOOP:
 
     def create(self, model, data):
         """ create a new register """
+        if self.debug:
+            print "DEBUG [create]:", model, data
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
     def unlink(self, model, ids):
         """ remove register """
+        if self.debug:
+            print "DEBUG [unlink]:", model, ids
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
 
     def write(self, model, ids, value):
         """ update register """
+        if self.debug:
+            print "DEBUG [write]:", model, ids, value
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
 
     def read(self, model, ids, fields=[]):
         """ update register """
+        if self.debug:
+            print "DEBUG [read]:", model, ids, fields
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
 
     def read_all(self, model, fields=[]):
         """ update register """
+        if self.debug:
+            print "DEBUG [read_all]:", model, fields
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
 
     def search(self, model, query):
         """ return ids that match with 'query' """
+        if self.debug:
+            print "DEBUG [search]:", model, query
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
         
     # TODO: verify if remove this
@@ -162,9 +194,11 @@ class OOOP:
             print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
 
-    def all(self, model):
+    def all(self, model, query=[]):
         """ return all ids """
-        return self.search(model, [])
+        if self.debug:
+            print "DEBUG [all]:", model, query
+        return self.search(model, query)
 
     def insert_items(self, model, data):
         """ insert items into database """
@@ -313,7 +347,7 @@ class OOOP:
 
 # reference: http://www.java2s.com/Code/Python/Class/MyListinitaddmulgetitemlengetslice.htm
 class List:
-    """ An 'intelligent' list """
+    """ An 'smart' list """
     #FIXME: reorder args
     #TODO: cache
     def __init__(self, manager, objects=None, parent=None, 
@@ -390,14 +424,19 @@ class Manager:
     def copy(self, ref):
         return Data(self, ref, copy=True)
 
-    def all(self, offset=0, length=999999, as_tuple=False):
+    def all(self, fields=[], offset=0, limit=999999, as_list=False):
         ids = self._ooop.all(self._model)
-        data = self._ooop.read(self._model, ids[offset:length])
-        if as_tuple:
-            items = []
+        if not ids:
+            return []
+        data = self._ooop.read(self._model, ids[offset:limit], fields)
+        if as_list:
+            res = []
             for item in data:
-                items.append(Data(self, item["id"], data=item)) #FIXME: item["id"] is redundant
-            return items
+                row = {'id': item['id']}
+                for i in fields:
+                    row[i] = item[i]
+                res.append(dict2obj(row))
+            return res
         return List(self, ids) #manager, object ids
 
     def filter(self, *args, **kargs):
@@ -426,7 +465,7 @@ class Manager:
 
 
 class Data(object):
-    def __init__(self, manager, ref=None, model=None, copy=False, data=None, *args, **kargs):
+    def __init__(self, manager, ref=None, model=None, copy=False, data=None, fields=[], *args, **kargs):
         if not model:
             self._model = manager._model # model name # FIXME!
         else:
@@ -435,6 +474,7 @@ class Data(object):
         self._ooop = self._manager._ooop
         self._copy = copy
         self._data = data
+        self._fields = fields
         self.INSTANCES = {}
         if ref:
             self._ref = ref
@@ -497,7 +537,7 @@ class Data(object):
     def get_values(self):
         """ get values of fields with no relations """
         if not self._data:
-            data = self._ooop.read(self._model, self._ref)
+            data = self._ooop.read(self._model, self._ref, self._fields)
             if not data:
                 raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
             else:
