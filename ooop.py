@@ -424,9 +424,19 @@ class Manager:
     def copy(self, ref):
         return Data(self, ref, copy=True)
 
+    def read(self, ids, fields=[]):
+        data = self._ooop.read(self._model, ids, fields)
+        res = []
+        for item in data:
+            row = {'id': item['id']}
+            for i in fields:
+                row[i] = item[i]
+            res.append(dict2obj(row))
+        return res
+
     def all(self, fields=[], offset=0, limit=999999, as_list=False):
         ids = self._ooop.all(self._model)
-        if not ids:
+        if not ids: # CHECKTHIS
             return []
         data = self._ooop.read(self._model, ids[offset:limit], fields)
         if as_list:
@@ -439,7 +449,7 @@ class Manager:
             return res
         return List(self, ids) #manager, object ids
 
-    def filter(self, *args, **kargs):
+    def filter(self, fields=[], as_list=False, **kargs):
         q = [] # query dict
         for key, value in kargs.items():
             if not '__' in key:
@@ -449,7 +459,10 @@ class Manager:
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
             q.append(('%s' % key, op, value))
-        return List(self, self._ooop.search(self._model, q))
+        ids = self._ooop.search(self._model, q)
+        if as_list:
+            return self.read(ids, fields)
+        return List(self, ids)
 
     def exclude(self, *args, **kargs):
         pass # TODO
