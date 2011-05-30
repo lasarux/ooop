@@ -517,6 +517,11 @@ class Data(object):
             default_values = {}
             field_names = self.fields.keys()
             default_values = self._manager.default_get(field_names)
+            # convert DateTime instance to datetime.datetime object
+            for i in default_values:
+                if self.fields[i]['ttype'] == 'datetime':
+                    t = default_values[i].timetuple()
+                    default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
             # active by default ?
             if self._ooop.active:
                 default_values['active'] = True
