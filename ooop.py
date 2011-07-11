@@ -156,6 +156,8 @@ class OOOP:
         """ create a new register """
         if self.debug:
             print "DEBUG [create]:", model, data
+        if 'id' in data:
+            del data['id']
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
     def unlink(self, model, ids):
@@ -182,11 +184,11 @@ class OOOP:
             print "DEBUG [read_all]:", model, fields
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
 
-    def search(self, model, query):
+    def search(self, model, query, offset=0, limit=999, order=''):
         """ return ids that match with 'query' """
         if self.debug:
-            print "DEBUG [search]:", model, query
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+            print "DEBUG [search]:", model, query, offset, limit, order
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order)
         
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
@@ -451,15 +453,27 @@ class Manager:
 
     def filter(self, fields=[], as_list=False, **kargs):
         q = [] # query dict
+        offset = 0
+        limit = 999
+        order = ''
         for key, value in kargs.items():
-            if not '__' in key:
-                op = '='
-            else:
+            if key == 'offset':
+                if int(value):
+                    offset = value
+            elif key == 'limit':
+                if int(value):
+                    limit = value
+            elif key == 'order':
+                order = value
+            elif '__' in key:
                 i = key.find('__')
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
-            q.append(('%s' % key, op, value))
-        ids = self._ooop.search(self._model, q)
+            	q.append(('%s' % key, op, value))
+            else:
+                op = '='
+            	q.append(('%s' % key, op, value))
+        ids = self._ooop.search(self._model, q, offset, limit, order)
         if as_list:
             return self.read(ids, fields)
         return List(self, ids)
