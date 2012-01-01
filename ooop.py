@@ -527,6 +527,8 @@ class Data(object):
                 default_values['active'] = True
             default_values.update(**kargs) # initial values from caller
             self.init_values(**default_values)
+            if self._ooop.debug:
+                print ">>> default values: %s" % default_values
 
     def init_values(self, *args, **kargs):
         """ initial values for object """
@@ -539,7 +541,7 @@ class Data(object):
                 else:
                     self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation)
             elif ttype == 'many2one':
-                if name in keys:
+                if name in keys and kargs[name]:
                     # manager, ref=None, model=None, copy=False
                     instance = Data(Manager(relation, self._ooop), kargs[name], relation)
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
