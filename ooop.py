@@ -604,7 +604,7 @@ class Data(object):
                 else:
                     self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation)
             elif ttype == 'many2one':
-                if name in keys:
+                if name in keys and kargs[name]:
                     # manager, ref=None, model=None, copy=False
                     instance = Data(Manager(relation, self._ooop), kargs[name], relation)
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
