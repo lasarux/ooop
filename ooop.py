@@ -739,7 +739,7 @@ class Data(object):
                         for i in self.__dict__[name]:
                             self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                 elif ttype == 'many2one':
-                    if self.__dict__[name]:
+                    if self.__dict__[name] and 'name' in dir(self.__dict__[name]):
                         data[name] = self.__dict__[name]._ref
                         # update __name and INSTANCES (cache)
                         self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
