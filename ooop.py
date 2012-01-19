@@ -118,7 +118,7 @@ class OOOP:
     """ Main class to manage xml-rpc comunitacion with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, protocol='xmlrpc', debug=False, 
-                 exe=False, active=True, **kwargs):
+                 exe=False, active=True, lang='en_US', **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -135,6 +135,7 @@ class OOOP:
         self.models = {}
         self.fields = {}
         self.proxy = False
+        self.lang = lang
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
@@ -176,22 +177,23 @@ class OOOP:
 
     def create(self, model, data):
         """ create a new register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [create]:", model, data
         if 'id' in data:
-			del data['id']
+            del data['id']
         if self.protocol == 'pyro':
-            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'create', data)
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'create', data, context)
         else:
-            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, context)
         return result
 
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-	if not type(ids) == 'list':
-	    ids = [ids]
+        if not type(ids) == 'list':
+            ids = [ids]
         if self.protocol == 'pyro':
             result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'unlink', ids)
         else:
@@ -200,12 +202,13 @@ class OOOP:
 
     def write(self, model, ids, value):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [write]:", model, ids, value
         if self.protocol == 'pyro':
-            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
         else:
-            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
         return result
 
     def read(self, model, ids, fields=[]):
