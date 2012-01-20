@@ -205,6 +205,8 @@ class OOOP:
         context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [write]:", model, ids, value
+        if not type(ids) == 'list':
+            ids = [ids]
         if self.protocol == 'pyro':
             result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
         else:
