@@ -140,7 +140,7 @@ class OOOP:
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
         self.uid = self.login(self.dbname, self.user, self.pwd)
-        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port))
+        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port), allow_none=True)
         self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
     
     def login(self, dbname, user, pwd):
