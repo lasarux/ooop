@@ -641,7 +641,11 @@ class Data(object):
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
         elif ttype == "datetime" and data[name]:
-            self.__dict__[name] = datetime.strptime(data[name], "%Y-%m-%d %H:%M:%S")
+            p1, p2 = data[name].split(".", 1) 
+            d1 = datetime.strptime(p1, "%Y-%m-%d %H:%M:%S")
+            ms = int(p2.ljust(6,'0')[:6]) 
+            d1.replace(microsecond=ms)
+            self.__dict__[name] = d1
         elif ttype == "date" and data[name]:
             self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], "%Y-%m-%d").toordinal())
         else:
