@@ -381,7 +381,7 @@ class List:
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.manager._ooop.unlink(self.model, self.objects)
+        return self.manager._ooop.unlink(self.model, [o._ref for o in self.objects])
     
     def append(self, value):
         if self.data:
@@ -694,7 +694,7 @@ class Data(object):
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
-            self._ooop.write(self._model, self._ref, data)
+            self._ooop.write(self._model, [self._ref], data)
         else:
             self._ref = self._ooop.create(self._model, data)
         
@@ -705,7 +705,7 @@ class Data(object):
             
     def delete(self):
         if self._ref > 0:
-            self._ooop.unlink(self._model, self._ref)
+            self._ooop.unlink(self._model, [self._ref])
         #else:
         #    pass # TODO
         remove(self)
