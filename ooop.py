@@ -737,7 +737,7 @@ class Data(object):
                     elif ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
-                    if len(self.__dict__[name]) > 0:
+                    if len(self.__dict__[name]) > 0 and hasattr(i,'save'):
                         data[name] = [(6, 0, [i.save() for i in self.__dict__[name]])]
                         # update __name and INSTANCES (cache)
                         self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
