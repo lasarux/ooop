@@ -188,6 +188,3 @@ o.ResPartner.export(deep=1)
 
 The deep param its relative to the model param, deep means how far you want to get with the relations.
 
-
-
-<img src="http://github.com/lasarux/ooop/raw/master/artwork/openerp.png" width="350px" height="150px" />

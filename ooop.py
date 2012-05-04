@@ -109,7 +109,7 @@ class objectsock_mock():
         
 
 class OOOP:
-    """ Main class to manage xml-rpc comunitacion with openerp-server """
+    """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
                  exe=False, active=True, **kwargs):
