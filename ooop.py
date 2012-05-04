@@ -699,7 +699,10 @@ class Data(object):
                     if self.__dict__[name]:
                         data[name] = self.__dict__[name]._ref
                         # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
+                        ## TODO: remove the need of having a ".name" in object !
+                        ## XXXvlab: what's the use of the '__%s' attributes ?
+                        if 'name' in dir(self.__dict__[name]):
+                            self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
                         self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
 
         if self._ooop.debug:
