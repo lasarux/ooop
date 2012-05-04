@@ -112,7 +112,7 @@ class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
-                 exe=False, active=True, **kwargs):
+                 exe=False, active=True, context=None, lang=None, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -127,6 +127,11 @@ class OOOP:
         self.uid = None
         self.models = {}
         self.fields = {}
+
+        self.context = context if context else {}
+
+        if lang:
+            self.context['lang'] = lang
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
@@ -158,43 +163,43 @@ class OOOP:
             print "DEBUG [create]:", model, data
         if 'id' in data:
             del data['id']
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, self.context)
 
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids, self.context)
 
     def write(self, model, ids, value):
         """ update register """
         if self.debug:
             print "DEBUG [write]:", model, ids, value
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, self.context)
 
     def read(self, model, ids, fields=[]):
         """ update register """
         if self.debug:
             print "DEBUG [read]:", model, ids, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields, self.context)
 
     def read_all(self, model, fields=[]):
         """ update register """
         if self.debug:
             print "DEBUG [read_all]:", model, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, self.context)
 
     def search(self, model, query, offset=0, limit=999, order=''):
         """ return ids that match with 'query' """
         if self.debug:
             print "DEBUG [search]:", model, query, offset, limit, order
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order)
-        
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, self.context)
+
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
         if self.debug:
             print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data, self.context)
 
     def all(self, model, query=[]):
         """ return all ids """
