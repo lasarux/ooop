@@ -192,7 +192,7 @@ class OOOP:
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-        if not type(ids) == 'list':
+        if isinstance(ids, int):
             ids = [ids]
         if self.protocol == 'pyro':
             result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'unlink', ids)
@@ -205,7 +205,7 @@ class OOOP:
         context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [write]:", model, ids, value
-        if not type(ids) == 'list':
+        if isinstance(ids, int):
             ids = [ids]
         if self.protocol == 'pyro':
             result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
