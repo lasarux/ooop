@@ -35,6 +35,16 @@ Connecting to server
   >>> o = OOOP(dbname='demo')
 </code></pre>
 
+Pyro Protocol
+--------------------
+1. Install PyRO library (openerp-server and web client).
+http://www.xs4all.nl/~irmen/pyro3/
+2. Install PyRO Module OpenERP from Nan (thanks this contribution!)
+https://launchpad.net/openobject-client-kde
+<pre><code>
+  >>> o = OOOP(user='admin',pwd='admin',dbname='zikzakmedia',uri='localhost',port=8071,protocol='pyro')
+</code></pre>
+
 
 Retrieving all from model
 -------------------------
@@ -187,4 +197,3 @@ o.ResPartner.export(deep=1)
 
 
 The deep param its relative to the model param, deep means how far you want to get with the relations.
-
