@@ -187,7 +187,18 @@ class OOOP:
         else:
             result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, context)
         return result
-
+    
+    def copy(self, obj):
+        """ Copy the register """
+        context = {'lang':self.lang}
+        if self.debug:
+            print "DEBUG [copy]:", obj
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, obj._model, 'copy', obj._data['id'], context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, obj._model, 'copy', obj._data['id'], context)
+        return result
+    
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
@@ -737,9 +748,16 @@ class Data(object):
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
                     if ttype == 'date' and self.__dict__[name]:
-                        data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                        if type(self.__dict__[name]) is date:
+                            data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                        else:
+                            data[name] = self.__dict__[name]
                     elif ttype == 'datetime' and self.__dict__[name]:
-                        data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
+                        if type(self.__dict__[name]) is date or type(self.__dict__[name]) is datetime: 
+                            data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
+                        else:
+                            data[name] = self.__dict__[name]
+                                                    
                     elif ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
@@ -777,7 +795,11 @@ class Data(object):
         #else:
         #    pass # TODO
         remove(self)
-
+        
+    def copy(self):
+        """ Save a copya os this instance and return its id  """
+        return self._ooop.copy(self)
+        
     # TODO: to develop a more clever save function
     def save_all(self): 
         """ save related instances """
