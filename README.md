@@ -140,6 +140,14 @@ Creating new
   >>> n.save()
 </code></pre>
 
+Copy
+------------
+
+<pre><code>
+  >>> invoice = o.AccountInvoice.get(27)
+  >>> new_id = invoice.copy()  
+  >>> copied_invoice = o.AccountInvoice.get(new_id)
+</code></pre>
 
 **with related objects**
 
