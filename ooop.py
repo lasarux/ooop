@@ -226,32 +226,35 @@ class OOOP:
 
     def read(self, model, ids, fields=[]):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [read]:", model, ids, fields
         if self.protocol == 'pyro':
-            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', ids, fields, context)
         else:
-            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields, context)
         return result
 
     def read_all(self, model, fields=[]):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [read_all]:", model, fields
         if self.protocol == 'pyro':
-            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, context)
         else:
-            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, context)
         return result
 
     def search(self, model, query, offset=0, limit=999, order=''):
         """ return ids that match with 'query' """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [search]:", model, query, offset, limit, order
         if self.protocol == 'pyro':
-            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order)
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, context)
         else:
-            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order)
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, context)
         return result
         
     # TODO: verify if remove this
