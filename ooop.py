@@ -32,6 +32,12 @@ try:
 except:
     pydot = False
 
+# check if pyro is installed
+try:
+    import Pyro.core
+except:
+    pyro = False
+
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
 __version__ = "0.2.3"
@@ -111,13 +117,14 @@ class objectsock_mock():
 class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
-                 uri='http://localhost', port=8069, debug=False, 
-                 exe=False, active=True, **kwargs):
+                 uri='http://localhost', port=8069, protocol='xmlrpc', debug=False, 
+                 exe=False, active=True, lang='en_US', **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
         self.uri = uri
         self.port = port
+        self.protocol = protocol   # default: 'xmlrpc'
         self.debug = debug
         self.exe = exe
         self.active = active
@@ -127,13 +134,18 @@ class OOOP:
         self.uid = None
         self.models = {}
         self.fields = {}
+        self.proxy = False
+        self.lang = lang
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
             self.uid = kwargs['uid']
             self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
         else:
-            self.connect()
+            if protocol == 'pyro':
+                self.connect_pyro()
+            else:
+                self.connect()
         
         self.load_models()
 
@@ -147,46 +159,103 @@ class OOOP:
         self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
 
+    def connect_pyro(self):
+        """login and sockets to pyro services: common, object and report"""
+        url = 'PYROLOC://%s:%s/rpc' % (self.uri,self.port)
+        self.proxy =  Pyro.core.getProxyForURI(url)
+        self.uid = self.proxy.dispatch( 'common', 'login', self.dbname, self.user, self.pwd)
+        self.reportsock = False
+
     def execute(self, model, *args):
         if self.debug:
             print "DEBUG [execute]:", model, args
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, *args)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+        return result
 
     def create(self, model, data):
         """ create a new register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [create]:", model, data
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
-
+        if 'id' in data:
+            del data['id']
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'create', data, context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, context)
+        return result
+    
+    def copy(self, obj):
+        """ Copy the register """
+        context = {'lang':self.lang}
+        if self.debug:
+            print "DEBUG [copy]:", obj
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, obj._model, 'copy', obj._data['id'], context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, obj._model, 'copy', obj._data['id'], context)
+        return result
+    
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        if isinstance(ids, int):
+            ids = [ids]
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        return result
 
     def write(self, model, ids, value):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [write]:", model, ids, value
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        if isinstance(ids, int):
+            ids = [ids]
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, context)
+        return result
 
     def read(self, model, ids, fields=[]):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [read]:", model, ids, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', ids, fields, context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields, context)
+        return result
 
     def read_all(self, model, fields=[]):
         """ update register """
+        context = {'lang':self.lang}
         if self.debug:
             print "DEBUG [read_all]:", model, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, context)
+        return result
 
-    def search(self, model, query):
+    def search(self, model, query, offset=0, limit=999, order=''):
         """ return ids that match with 'query' """
+        context = {'lang':self.lang}
         if self.debug:
-            print "DEBUG [search]:", model, query
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+            print "DEBUG [search]:", model, query, offset, limit, order
+        if self.protocol == 'pyro':
+            result = self.proxy.dispatch( 'object', 'execute', self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, context)
+        else:
+            result = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, context)
+        return result
         
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
@@ -451,15 +520,27 @@ class Manager:
 
     def filter(self, fields=[], as_list=False, **kargs):
         q = [] # query dict
+        offset = 0
+        limit = 999
+        order = ''
         for key, value in kargs.items():
-            if not '__' in key:
-                op = '='
-            else:
+            if key == 'offset':
+                if int(value):
+                    offset = value
+            elif key == 'limit':
+                if int(value):
+                    limit = value
+            elif key == 'order':
+                order = value
+            elif '__' in key:
                 i = key.find('__')
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
-            q.append(('%s' % key, op, value))
-        ids = self._ooop.search(self._model, q)
+            	q.append(('%s' % key, op, value))
+            else:
+                op = '='
+            	q.append(('%s' % key, op, value))
+        ids = self._ooop.search(self._model, q, offset, limit, order)
         if as_list:
             return self.read(ids, fields)
         return List(self, ids)
@@ -520,7 +601,10 @@ class Data(object):
             # convert DateTime instance to datetime.datetime object
             for i in default_values:
                 if self.fields[i]['ttype'] == 'datetime':
-                    t = default_values[i].timetuple()
+                    if isinstance(default_values[i], str):
+                        t = datetime.strptime(default_values[i], "%Y-%m-%d %H:%M:%S").timetuple()
+                    else:
+                        t = default_values[i].timetuple()
                     default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
             # active by default ?
             if self._ooop.active:
@@ -667,9 +751,16 @@ class Data(object):
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
                     if ttype == 'date' and self.__dict__[name]:
-                        data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                        if type(self.__dict__[name]) is date:
+                            data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                        else:
+                            data[name] = self.__dict__[name]
                     elif ttype == 'datetime' and self.__dict__[name]:
-                        data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
+                        if type(self.__dict__[name]) is date or type(self.__dict__[name]) is datetime: 
+                            data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
+                        else:
+                            data[name] = self.__dict__[name]
+                                                    
                     elif ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
@@ -680,7 +771,7 @@ class Data(object):
                         for i in self.__dict__[name]:
                             self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                 elif ttype == 'many2one':
-                    if self.__dict__[name]:
+                    if self.__dict__[name] and 'name' in dir(self.__dict__[name]):
                         data[name] = self.__dict__[name]._ref
                         # update __name and INSTANCES (cache)
                         self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
@@ -707,7 +798,11 @@ class Data(object):
         #else:
         #    pass # TODO
         remove(self)
-
+        
+    def copy(self):
+        """ Save a copya os this instance and return its id  """
+        return self._ooop.copy(self)
+        
     # TODO: to develop a more clever save function
     def save_all(self): 
         """ save related instances """
