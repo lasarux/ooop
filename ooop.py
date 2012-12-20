@@ -538,6 +538,8 @@ class Data(object):
             default_values = self._manager.default_get(field_names)
             # convert DateTime instance to datetime.datetime object
             for i in default_values:
+                if i not in self.fields:
+                    continue
                 if self.fields[i]['ttype'] == 'datetime':
                     if isinstance(default_values[i], str):
                         t = datetime.strptime(default_values[i], "%Y-%m-%d %H:%M:%S").timetuple()
@@ -545,7 +547,7 @@ class Data(object):
                         t = default_values[i].timetuple()
                     default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
             # active by default ?
-            if self._ooop.active:
+            if 'active' in self.fields and self._ooop.active:
                 default_values['active'] = True
             default_values.update(**kargs) # initial values from caller
             self.init_values(**default_values)
