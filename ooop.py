@@ -189,7 +189,7 @@ class OOOP:
             print "DEBUG [read_all]:", model, fields
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, self.context)
 
-    def search(self, model, query, offset=0, limit=999, order=''):
+    def search(self, model, query, offset=0, limit=None, order=None):
         """ return ids that match with 'query' """
         if self.debug:
             print "DEBUG [search]:", model, query, offset, limit, order
