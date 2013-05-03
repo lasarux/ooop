@@ -628,7 +628,7 @@ class Data(object):
         try:
             name = self.fields[field]['name']
         except:
-            raise NameError('field \'%s\' is not defined' % field)
+            raise AttributeError('field \'%s\' is not defined' % field)
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
