@@ -1,4 +1,4 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 ########################################################################
 #
 #   OOOP, OpenObject On Python
@@ -40,7 +40,7 @@ except:
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 
 OOOPMODELS = 'ir.model'
@@ -269,7 +269,7 @@ class OOOP:
                 print 'Warning: %s already in %s model: %s' % (item, model)
 
     def load_models(self):
-        models = self.read_all(OOOPMODELS)
+        models = self.read_all(OOOPMODELS, fields=['model'])
         for model in models:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
