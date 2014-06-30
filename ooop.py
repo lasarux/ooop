@@ -459,7 +459,7 @@ class Manager:
     def filter(self, fields=[], as_list=False, **kargs):
         q = [] # query dict
         offset = 0
-        limit = 999
+        limit = None
         order = ''
         for key, value in kargs.items():
             if key == 'offset':
