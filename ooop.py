@@ -34,7 +34,7 @@ except:
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.3"
+__version__ = "0.2.3-0k"
 
 
 OOOPMODELS = 'ir.model'
