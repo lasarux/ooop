@@ -108,6 +108,10 @@ class objectsock_mock():
             return getattr(_model, action)(self.cr, uid) # is callable
         
 
+class LoginFailed(Exception):
+    pass
+
+
 class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
@@ -145,6 +149,8 @@ class OOOP:
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
         self.uid = self.login(self.dbname, self.user, self.pwd)
+        if self.uid is False:
+            raise LoginFailed()
         self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port), allow_none=True)
         self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
     
