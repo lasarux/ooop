@@ -1,4 +1,4 @@
-<img src="http://github.com/lasarux/ooop/raw/master/artwork/ooop.png" width="150px" height="150px" />
+This is an experimental fork of OOOP. Use at your own risk.
 
 **Warning: this is a very initial release.**
 

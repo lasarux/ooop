@@ -34,7 +34,7 @@ except:
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.3"
+__version__ = "0.2.3-0k"
 
 
 OOOPMODELS = 'ir.model'
@@ -108,11 +108,15 @@ class objectsock_mock():
             return getattr(_model, action)(self.cr, uid) # is callable
         
 
+class LoginFailed(Exception):
+    pass
+
+
 class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
-                 exe=False, active=True, **kwargs):
+                 exe=False, active=True, context=None, lang=None, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -128,6 +132,11 @@ class OOOP:
         self.models = {}
         self.fields = {}
 
+        self.context = context if context else {}
+
+        if lang:
+            self.context['lang'] = lang
+
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
             self.uid = kwargs['uid']
@@ -140,7 +149,9 @@ class OOOP:
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
         self.uid = self.login(self.dbname, self.user, self.pwd)
-        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port))
+        if self.uid is False:
+            raise LoginFailed()
+        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port), allow_none=True)
         self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
     
     def login(self, dbname, user, pwd):
@@ -156,43 +167,45 @@ class OOOP:
         """ create a new register """
         if self.debug:
             print "DEBUG [create]:", model, data
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+        if 'id' in data:
+            del data['id']
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, self.context)
 
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids, self.context)
 
     def write(self, model, ids, value):
         """ update register """
         if self.debug:
             print "DEBUG [write]:", model, ids, value
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, self.context)
 
     def read(self, model, ids, fields=[]):
         """ update register """
         if self.debug:
             print "DEBUG [read]:", model, ids, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields, self.context)
 
     def read_all(self, model, fields=[]):
         """ update register """
         if self.debug:
             print "DEBUG [read_all]:", model, fields
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, self.context)
 
-    def search(self, model, query):
+    def search(self, model, query, offset=0, limit=None, order=None):
         """ return ids that match with 'query' """
         if self.debug:
-            print "DEBUG [search]:", model, query
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
-        
+            print "DEBUG [search]:", model, query, offset, limit, order
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, self.context)
+
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
         if self.debug:
             print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data, self.context)
 
     def all(self, model, query=[]):
         """ return all ids """
@@ -381,7 +394,7 @@ class List:
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
-        return self.manager._ooop.unlink(self.model, self.objects)
+        return self.manager._ooop.unlink(self.model, [o._ref for o in self.objects])
     
     def append(self, value):
         if self.data:
@@ -451,15 +464,27 @@ class Manager:
 
     def filter(self, fields=[], as_list=False, **kargs):
         q = [] # query dict
+        offset = 0
+        limit = None
+        order = ''
         for key, value in kargs.items():
-            if not '__' in key:
-                op = '='
-            else:
+            if key == 'offset':
+                if int(value):
+                    offset = value
+            elif key == 'limit':
+                if int(value):
+                    limit = value
+            elif key == 'order':
+                order = value
+            elif '__' in key:
                 i = key.find('__')
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
-            q.append(('%s' % key, op, value))
-        ids = self._ooop.search(self._model, q)
+            	q.append(('%s' % key, op, value))
+            else:
+                op = '='
+            	q.append(('%s' % key, op, value))
+        ids = self._ooop.search(self._model, q, offset, limit, order)
         if as_list:
             return self.read(ids, fields)
         return List(self, ids)
@@ -519,11 +544,16 @@ class Data(object):
             default_values = self._manager.default_get(field_names)
             # convert DateTime instance to datetime.datetime object
             for i in default_values:
+                if i not in self.fields:
+                    continue
                 if self.fields[i]['ttype'] == 'datetime':
-                    t = default_values[i].timetuple()
+                    if isinstance(default_values[i], str):
+                        t = datetime.strptime(default_values[i], "%Y-%m-%d %H:%M:%S").timetuple()
+                    else:
+                        t = default_values[i].timetuple()
                     default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
             # active by default ?
-            if self._ooop.active:
+            if 'active' in self.fields and self._ooop.active:
                 default_values['active'] = True
             default_values.update(**kargs) # initial values from caller
             self.init_values(**default_values)
@@ -541,7 +571,7 @@ class Data(object):
                 else:
                     self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation)
             elif ttype == 'many2one':
-                if name in keys and kargs[name]:
+                if name in keys and kargs[name] is not False:
                     # manager, ref=None, model=None, copy=False
                     instance = Data(Manager(relation, self._ooop), kargs[name], relation)
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
@@ -604,7 +634,7 @@ class Data(object):
         try:
             name = self.fields[field]['name']
         except:
-            raise NameError('field \'%s\' is not defined' % field)
+            raise AttributeError('field \'%s\' is not defined' % field)
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
@@ -641,11 +671,10 @@ class Data(object):
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
         elif ttype == "datetime" and data[name]:
-            p1, p2 = data[name].split(".", 1) 
-            d1 = datetime.strptime(p1, "%Y-%m-%d %H:%M:%S")
-            ms = int(p2.ljust(6,'0')[:6]) 
-            d1.replace(microsecond=ms)
-            self.__dict__[name] = d1
+            if len(data[name]) > 19:
+                self.__dict__[name] = datetime.strptime(data[name], "%Y-%m-%d %H:%M:%S.%f")
+            else:
+                self.__dict__[name] = datetime.strptime(data[name], "%Y-%m-%d %H:%M:%S")
         elif ttype == "date" and data[name]:
             self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], "%Y-%m-%d").toordinal())
         else:
@@ -683,7 +712,10 @@ class Data(object):
                     if self.__dict__[name]:
                         data[name] = self.__dict__[name]._ref
                         # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
+                        ## TODO: remove the need of having a ".name" in object !
+                        ## XXXvlab: what's the use of the '__%s' attributes ?
+                        if 'name' in dir(self.__dict__[name]):
+                            self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
                         self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
 
         if self._ooop.debug:
@@ -692,7 +724,7 @@ class Data(object):
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
-            self._ooop.write(self._model, self._ref, data)
+            self._ooop.write(self._model, [self._ref], data)
         else:
             self._ref = self._ooop.create(self._model, data)
         
@@ -703,7 +735,7 @@ class Data(object):
             
     def delete(self):
         if self._ref > 0:
-            self._ooop.unlink(self._model, self._ref)
+            self._ooop.unlink(self._model, [self._ref])
         #else:
         #    pass # TODO
         remove(self)
