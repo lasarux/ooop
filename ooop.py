@@ -20,6 +20,7 @@
 #
 ########################################################################
 
+import sys
 import xmlrpclib
 import time
 import base64
@@ -116,7 +117,9 @@ class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
-                 exe=False, active=True, context=None, lang=None, **kwargs):
+                 exe=False, active=True, context=None, lang=None,
+                 verify=True,
+                 **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -131,11 +134,24 @@ class OOOP:
         self.uid = None
         self.models = {}
         self.fields = {}
+        self.verify = verify
 
         self.context = context if context else {}
 
         if lang:
             self.context['lang'] = lang
+
+        self.http_kws = {}
+        if self.uri.startswith('https://'):
+            if sys.version_info < (2, 7, 9):
+                if self.verify:
+                    raise ValueError(
+                        "SSL connections are not verified for "
+                        "valid certificate in python version < 2.7.9")
+            else:
+                if not self.verify:
+                    import ssl
+                    self.http_kws["context"] = ssl._create_unverified_context()
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
@@ -151,11 +167,11 @@ class OOOP:
         self.uid = self.login(self.dbname, self.user, self.pwd)
         if self.uid is False:
             raise LoginFailed()
-        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port), allow_none=True)
-        self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
-    
+        self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port), allow_none=True, **self.http_kws)
+        self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port), **self.http_kws)
+
     def login(self, dbname, user, pwd):
-        self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
+        self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port), **self.http_kws)
         return self.commonsock.login(dbname, user, pwd)
 
     def execute(self, model, *args):
