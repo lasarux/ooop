@@ -113,7 +113,7 @@ class OOOP:
     def __init__(self, user='admin', pwd='admin', dbname='openerp', 
                  uri='http://localhost', port=8069, debug=False, 
                  exe=False, active=True, context=None, lang=None,
-                 verify=True,
+                 load_models=True, verify=True,
                  **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
@@ -154,8 +154,10 @@ class OOOP:
             self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
         else:
             self.connect()
-        
-        self.load_models()
+
+        if load_models:
+            self.load_models()
+
 
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
