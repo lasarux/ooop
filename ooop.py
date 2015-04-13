@@ -27,11 +27,6 @@ import base64
 import types
 from datetime import datetime, date
 
-# check if pydot is installed
-try:
-    import pydot
-except:
-    pydot = False
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
@@ -266,7 +261,15 @@ class OOOP:
     def export(self, filename, filetype, showfields=True, model=None, deep=-1):
         """Export the model to dot file"""
         #o2m 0..* m2m *..* m2o *..0
-        
+
+        ## import pydot only there because its the sole function using it,
+        ## and it's quite long to import.
+        # check if pydot is installed
+        try:
+            import pydot
+        except:
+            pydot = False
+
         if not pydot:
             raise ImportError('no pydot package found')
         
