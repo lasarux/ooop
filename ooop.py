@@ -30,7 +30,7 @@ from datetime import datetime, date
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.3"
+__version__ = "0.3.0"
 
 
 OOOPMODELS = 'ir.model'
@@ -208,11 +208,11 @@ class OOOP:
             print "DEBUG [read_all]:", model, fields
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields, self.context)
 
-    def search(self, model, query, offset=0, limit=None, order=None):
+    def search(self, model, query, offset=0, limit=None, order=None, count=False):
         """ return ids that match with 'query' """
         if self.debug:
             print "DEBUG [search]:", model, query, offset, limit, order
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, self.context)
+        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query, offset, limit, order, count, self.context)
 
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
@@ -658,16 +658,19 @@ class Data(object):
             raise AttributeError('field \'%s\' is not defined' % field)
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
+        assert(isinstance(data, list) and len(data) == 1)
+        data = data[0]
         if ttype == 'many2one':
             if data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
-                key = '%s:%i' % (relation, data[name][0])
+                assert(isinstance(data[name], int))
+                key = '%s:%i' % (relation, data[name])
                 if key in self.INSTANCES.keys():
                     self.__dict__[name] = self.INSTANCES[key]
                 else:
                     # TODO: use a Manager instance, not Data
                     instance = Data(Manager(relation, self._ooop),
-                                    data[name][0], relation, data=self)
+                                    data[name], relation, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
