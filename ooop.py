@@ -20,22 +20,21 @@
 #
 ########################################################################
 
-import xmlrpclib
+try:
+    import xmlrpclib
+except:
+    import xmlrpc.client as xmlrpclib
 import time
 import base64
 import types
+import logging
 from datetime import datetime, date
-
-# check if pydot is installed
-try:
-    import pydot
-except:
-    pydot = False
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
 __version__ = "0.2.4"
 
+logger = logging.getLogger(__name__)
 
 OOOPMODELS = 'ir.model'
 OOOPFIELDS = '%s.fields' % OOOPMODELS
@@ -150,7 +149,7 @@ class OOOP:
 
     def execute(self, model, *args):
         if self.debug:
-            print "DEBUG [execute]:", model, args
+            logger.debug("[execute]:", model, args)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -159,7 +158,7 @@ class OOOP:
     def create(self, model, data):
         """ create a new register """
         if self.debug:
-            print "DEBUG [create]:", model, data
+            logger.debug("[create]:", model, data)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -168,7 +167,7 @@ class OOOP:
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
-            print "DEBUG [unlink]:", model, ids
+            logger.debug("[unlink]:", model, ids)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -177,7 +176,7 @@ class OOOP:
     def write(self, model, ids, value):
         """ update register """
         if self.debug:
-            print "DEBUG [write]:", model, ids, value
+            logger.debug("[write]:", model, ids, value)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -186,25 +185,25 @@ class OOOP:
     def read(self, model, ids, fields=[]):
         """ update register """
         if self.debug:
-            print "DEBUG [read]:", model, ids, fields
+            logger.debug("[read]:", model, ids, fields)
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
 
     def read_all(self, model, fields=[]):
         """ update register """
         if self.debug:
-            print "DEBUG [read_all]:", model, fields
+            logger.debug("[read_all]:", model, fields)
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
 
     def search(self, model, query):
         """ return ids that match with 'query' """
         if self.debug:
-            print "DEBUG [search]:", model, query
+            logger.debug("[search]:", model, query)
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
 
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
         if self.debug:
-            print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
+            logger.debug("DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -213,7 +212,7 @@ class OOOP:
     def all(self, model, query=[]):
         """ return all ids """
         if self.debug:
-            print "DEBUG [all]:", model, query
+            logger.debug("[all]:", model, query)
         return self.search(model, query)
 
     def insert_items(self, model, data):
@@ -224,7 +223,7 @@ class OOOP:
             if not self.search(model, query): # check if it's already present
                 self.create(model, d)
             else:
-                print 'Warning: %s already in %s model: %s' % (item, model)
+                logger.debug('Warning: %s already in %s model: %s' % (item, model))
 
     def load_models(self):
         models = self.read_all(OOOPMODELS)
@@ -268,7 +267,7 @@ class OOOP:
                 time.sleep(1)
             attempt += 1
             if attempt > 200:
-                print 'Printing aborted, too long delay!'
+                logger.debug('Printing aborted, delay too long!')
                 break
 
         if report_type == 'pdf':
@@ -460,7 +459,7 @@ class Data(object):
             default_values.update(**kargs) # initial values from caller
             self.init_values(**default_values)
             if self._ooop.debug:
-                print ">>> default values: %s" % default_values
+                logger.debug("default values: %s" % default_values)
 
     def init_values(self, *args, **kargs):
         """ initial values for object """
@@ -508,7 +507,7 @@ class Data(object):
         else:
             fields = self.fields
         for i in fields:
-            print "%s: %s" % (i, self.__getattr__(i))
+            logger.debug("%s: %s" % (i, self.__getattr__(i)))
 
     def __setattr__(self, field, value):
         if 'fields' in self.__dict__:
@@ -631,8 +630,8 @@ class Data(object):
 
 
         if self._ooop.debug:
-            print ">>> model:", self._model
-            print ">>> data:", data
+            logger.debug("model:", self._model)
+            logger.debug("data:", data)
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
