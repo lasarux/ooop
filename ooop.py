@@ -34,7 +34,7 @@ except:
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.3"
+__version__ = "0.2.4"
 
 
 OOOPMODELS = 'ir.model'
@@ -80,7 +80,7 @@ class objectsock_mock():
     def __init__(self, parent, cr):
         self.parent = parent
         self.cr = cr
-    
+
     def execute(self, *args, **kargs):
         """mocking execute function"""
         if len(args) == 7:
@@ -89,9 +89,9 @@ class objectsock_mock():
             (dbname, uid, pwd, model, action, vals) = args
         elif len(args) == 5:
             (dbname, uid, pwd, model, action) = args
-        
+
         _model = self.parent.pool.get(model)
-        
+
         if action == 'create':
             return _model.create(self.cr, uid, vals)
         elif action == 'unlink':
@@ -106,13 +106,13 @@ class objectsock_mock():
             return _model.search(self.cr, uid, vals)
         else:
             return getattr(_model, action)(self.cr, uid) # is callable
-        
+
 
 class OOOP:
     """ Main class to manage xml-rpc communication with openerp-server """
-    def __init__(self, user='admin', pwd='admin', dbname='openerp', 
-                 uri='http://localhost', port=8069, debug=False, 
-                 exe=False, active=True, **kwargs):
+    def __init__(self, user='admin', pwd='admin', dbname='openerp',
+                 uri='http://localhost', port=8069, debug=False,
+                 exe=False, active=True, readonly=False, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'openerp'
@@ -127,6 +127,7 @@ class OOOP:
         self.uid = None
         self.models = {}
         self.fields = {}
+        self.readonly = readonly
 
         #has to be uid, cr, parent (the openerp model to get the pool)
         if len(kwargs) == 3:
@@ -134,7 +135,7 @@ class OOOP:
             self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
         else:
             self.connect()
-        
+
         self.load_models()
 
     def connect(self):
@@ -142,7 +143,7 @@ class OOOP:
         self.uid = self.login(self.dbname, self.user, self.pwd)
         self.objectsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/object' % (self.uri, self.port))
         self.reportsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/report' % (self.uri, self.port))
-    
+
     def login(self, dbname, user, pwd):
         self.commonsock = xmlrpclib.ServerProxy('%s:%i/xmlrpc/common' % (self.uri, self.port))
         return self.commonsock.login(dbname, user, pwd)
@@ -150,25 +151,37 @@ class OOOP:
     def execute(self, model, *args):
         if self.debug:
             print "DEBUG [execute]:", model, args
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+        if self.readonly:
+            raise Exception('readonly connection')
+        else:
+            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
 
     def create(self, model, data):
         """ create a new register """
         if self.debug:
             print "DEBUG [create]:", model, data
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+        if self.readonly:
+            raise Exception('readonly connection')
+        else:
+            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
             print "DEBUG [unlink]:", model, ids
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        if self.readonly:
+            raise Exception('readonly connection')
+        else:
+            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
 
     def write(self, model, ids, value):
         """ update register """
         if self.debug:
             print "DEBUG [write]:", model, ids, value
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        if self.readonly:
+            raise Exception('readonly connection')
+        else:
+            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
 
     def read(self, model, ids, fields=[]):
         """ update register """
@@ -187,12 +200,15 @@ class OOOP:
         if self.debug:
             print "DEBUG [search]:", model, query
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
-        
+
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
         if self.debug:
             print "DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
+        if self.readonly:
+            raise Exception('readonly connection')
+        else:
+            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
 
     def all(self, model, query=[]):
         """ return all ids """
@@ -220,8 +236,8 @@ class OOOP:
         """docstring for set_model"""
         if not model in r.keys():
             r[model] = {
-                'name': self.normalize_model_name(model), 
-                'links': {}, 
+                'name': self.normalize_model_name(model),
+                'links': {},
                 'fields': [] #TODO: storage i?
             }
             flds = self.read(OOOPFIELDS, self.models[model]['field_id'])
@@ -231,92 +247,8 @@ class OOOP:
                     if deep > 0 and not r[model]['links'].has_key(fld['relation']):
                         r[model]['links'][fld['relation']] = fld['ttype']
                         r = self.set_model(fld["relation"], r, deep-1)
-            
+
         return r
-        
-    def export(self, filename, filetype, showfields=True, model=None, deep=-1):
-        """Export the model to dot file"""
-        #o2m 0..* m2m *..* m2o *..0
-        
-        if not pydot:
-            raise ImportError('no pydot package found')
-        
-        if filename == "":
-            raise TypeError('no filename')
-        
-        if not filetype in ('dot', 'png', 'jpg', 'svg'):
-            raise TypeError('filetype only accept dot, png, jpg or svg types')
-
-        graph = pydot.Dot(graph_type='digraph')
-        graph.set_ratio('compress')
-        
-        HEADER = """<
-        <TABLE BGCOLOR="palegoldenrod" BORDER="0" CELLBORDER="0" CELLSPACING="0">
-            <TR>
-                <TD COLSPAN="2" CELLPADDING="4" ALIGN="CENTER" BGCOLOR="olivedrab4">
-                <FONT FACE="Helvetica Bold" COLOR="white">%s</FONT>
-                </TD>
-            </TR>
-        """
-        
-        FIELD = """
-            <TR><TD ALIGN="LEFT" BORDER="0"
-            ><FONT FACE="Helvetica Bold">%s</FONT
-            ></TD>
-            <TD ALIGN="LEFT"
-            ><FONT FACE="Helvetica Bold">%s</FONT
-            ></TD></TR>
-        """
-        
-        TAIL = """
-        </TABLE>
-        >"""
-        
-        r = {}
-        if not model:
-            models = self.read_all(OOOPMODELS)
-        else:
-            model_id = self.search(OOOPMODELS, [('model','=', model)])
-            models = self.read(OOOPMODELS, model_id)
-
-        for model in models:
-            r = self.set_model(model['model'], r, deep)
-
-        lines = ""
-        for key, value in r.items():
-            if showfields:
-                fields = ''.join([FIELD % k for k in value['fields']])
-            else:
-                fields = ''
-            label = HEADER % key + fields + TAIL
-            node = pydot.Node(value['name'], label=label)
-            node.set_shape('none')
-            graph.add_node(node)
-            for i in value['links'].keys():
-                edge = pydot.Edge(value['name'], r[i]['name'])
-                if value['links'][i] == 'one2many':
-                    edge.set_headlabel('0..*')
-                    edge.set_taillabel('*..0')
-                elif value['links'][i] == 'many2one':
-                    edge.set_headlabel('*..0')
-                    edge.set_taillabel('0..*')
-                elif value['links'][i] == 'many2many':
-                    edge.set_headlabel("*..*")
-                    edge.set_taillabel("*..*")
-                
-                graph.add_edge(edge)
-                
-        graph.set_fontsize('8.0')
-        filename = '%s.%s' % (filename, filetype)
-        if filetype == 'dot':
-            graph.write_dot(filename)
-        elif filetype == 'png':
-            graph.write_png(filename)
-        elif filetype == 'jpg':
-            graph.write_jpg(filename)
-        elif filetype == 'svg':
-            graph.write_svg(filename)
-
 
     def normalize_model_name(self, name):
         return "".join(["%s" % k.capitalize() for k in name.split('.')])
@@ -338,7 +270,7 @@ class OOOP:
             if attempt > 200:
                 print 'Printing aborted, too long delay!'
                 break
-        
+
         if report_type == 'pdf':
             string_pdf = base64.decodestring(report['result'])
             return string_pdf
@@ -350,7 +282,7 @@ class List:
     """ An 'smart' list """
     #FIXME: reorder args
     #TODO: cache
-    def __init__(self, manager, objects=None, parent=None, 
+    def __init__(self, manager, objects=None, parent=None,
                  low=None, high=None, data=None, model=None):
         self.manager = manager  # List or Manager instance
         if model:
@@ -369,25 +301,25 @@ class List:
 
     def __iter__(self):
         return self
- 
+
     def next(self):
         self.index += 1
         if self.index == len(self.objects):
             self.index = -1
             raise StopIteration
         return self.__getitem__(self.index)
-        
+
     def delete(self):
         if self.parent:
             objects = self.parent.objects
             self.parent.objects = objects[:self.low] + objects[self.high:]
         return self.manager._ooop.unlink(self.model, self.objects)
-    
+
     def append(self, value):
         if self.data:
             self.data.INSTANCES['%s:%s' % (self.model, value._ref)] = value
         self.objects.append(value)
-    
+
     def __getslice__(self, low, high):
         return List(self.manager, self.objects[low:high], self, low, high, data=self.data, model=self.model)
 
@@ -402,7 +334,7 @@ class List:
 
     def __len__(self):
         return len(self.objects)
-        
+
     def __repr__(self):
         return '<Objects from %s> %i elements' % (self.model, len(self.objects))
 
@@ -411,7 +343,7 @@ class Manager:
     def __init__(self, model, ooop):
         self._model = model
         self._ooop = ooop
-        
+
     def __getattr__(self, name):
         return lambda *a: self._ooop.execute(self._model, name, *a)
 
@@ -420,7 +352,7 @@ class Manager:
 
     def new(self, *args, **kargs):
         return Data(self, *args, **kargs)
-        
+
     def copy(self, ref):
         return Data(self, ref, copy=True)
 
@@ -493,9 +425,9 @@ class Data(object):
             self._ref = ref
         else:
             self._ref = -id(self)
-        
+
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
-        
+
         if self._model in self._ooop.fields.keys():
             self.fields = self._ooop.fields[self._model]
         else:
@@ -508,7 +440,7 @@ class Data(object):
                 del field['type']
                 self.fields[field_name] = field
             self._ooop.fields[self._model] = self.fields
-        
+
         # get current data for this object
         if ref:
             self.get_values()
@@ -584,7 +516,10 @@ class Data(object):
                 ttype = self.fields[field]['ttype']
                 if value:
                     if ttype =='many2one':
-                        self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
+                        if type(value) is int:
+                            self.INSTANCES['%s:%s' % (self._model, value)] = value
+                        else:
+                            self.INSTANCES['%s:%s' % (self._model, value._ref)] = value
         self.__dict__[field] = value
 
     def __getattr__(self, field):
@@ -641,9 +576,9 @@ class Data(object):
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
         elif ttype == "datetime" and data[name]:
-            p1, p2 = data[name].split(".", 1) 
+            p1, p2 = data[name].split(".", 1)
             d1 = datetime.strptime(p1, "%Y-%m-%d %H:%M:%S")
-            ms = int(p2.ljust(6,'0')[:6]) 
+            ms = int(p2.ljust(6,'0')[:6])
             d1.replace(microsecond=ms)
             self.__dict__[name] = d1
         elif ttype == "date" and data[name]:
@@ -656,17 +591,19 @@ class Data(object):
 
         if self.__dict__[name]:
             return self.__dict__[name]
-    
+
     def save(self):
         """ save attributes object data into openerp
             return: object id """
-        
+
         data = {}
         for i in self.fields.values():
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
                     if ttype == 'date' and self.__dict__[name]:
+                        #print name, ttype, relation
+                        #print self.__dict__[name]
                         data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
                     elif ttype == 'datetime' and self.__dict__[name]:
                         data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
@@ -681,10 +618,17 @@ class Data(object):
                             self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                 elif ttype == 'many2one':
                     if self.__dict__[name]:
-                        data[name] = self.__dict__[name]._ref
-                        # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
-                        self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
+                        if type(self.__dict__[name]) is int:
+                            data[name] = self.__dict__[name]
+                            # update __name and INSTANCES (cache)
+                            self.__dict__['__%s' % name] = [self.__dict__[name], self.__dict__[name]]
+                            self.INSTANCES['%s:%s' % (relation, self.__dict__[name])] = self.__dict__[name]
+                        else:
+                            data[name] = self.__dict__[name]._ref
+                            # update __name and INSTANCES (cache)
+                            self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
+                            self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
+
 
         if self._ooop.debug:
             print ">>> model:", self._model
@@ -695,12 +639,12 @@ class Data(object):
             self._ooop.write(self._model, self._ref, data)
         else:
             self._ref = self._ooop.create(self._model, data)
-        
+
         # update cache
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
         return self._ref
 
-            
+
     def delete(self):
         if self._ref > 0:
             self._ooop.unlink(self._model, self._ref)
@@ -709,7 +653,7 @@ class Data(object):
         remove(self)
 
     # TODO: to develop a more clever save function
-    def save_all(self): 
+    def save_all(self):
         """ save related instances """
         for key, instance in self.INSTANCES.items():
             if instance != self: # save self at the end
