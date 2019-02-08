@@ -26,7 +26,6 @@ except:
     import xmlrpc.client as xmlrpclib
 import time
 import base64
-import types
 import logging
 from datetime import datetime, date
 
@@ -149,7 +148,7 @@ class OOOP:
 
     def execute(self, model, *args):
         if self.debug:
-            logger.debug("[execute]:", model, args)
+            logger.debug("[execute]: %s %s " % (model, args))
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -158,7 +157,7 @@ class OOOP:
     def create(self, model, data):
         """ create a new register """
         if self.debug:
-            logger.debug("[create]:", model, data)
+            logger.debug("[create]: %s %s" % (model, data))
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -167,7 +166,7 @@ class OOOP:
     def unlink(self, model, ids):
         """ remove register """
         if self.debug:
-            logger.debug("[unlink]:", model, ids)
+            logger.debug("[unlink]: %s %s" % (model, ids))
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -176,7 +175,7 @@ class OOOP:
     def write(self, model, ids, value):
         """ update register """
         if self.debug:
-            logger.debug("[write]:", model, ids, value)
+            logger.debug("[write]: %s %s %s" % (model, ids, value))
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -185,25 +184,25 @@ class OOOP:
     def read(self, model, ids, fields=[]):
         """ update register """
         if self.debug:
-            logger.debug("[read]:", model, ids, fields)
+            logger.debug("[read]: %s %s %s" % (model, ids, fields))
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
 
     def read_all(self, model, fields=[]):
         """ update register """
         if self.debug:
-            logger.debug("[read_all]:", model, fields)
+            logger.debug("[read_all]: %s %s" % (model, fields))
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
 
     def search(self, model, query):
         """ return ids that match with 'query' """
         if self.debug:
-            logger.debug("[search]:", model, query)
+            logger.debug("[search]: %s %s" % (model, query))
         return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
 
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
         if self.debug:
-            logger.debug("DEBUG [custom_execute]:", self.dbname, self.uid, self.pwd, model, args)
+            logger.debug("DEBUG [custom_execute]: %s %s %s %s %s %s %s", self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
         if self.readonly:
             raise Exception('readonly connection')
         else:
@@ -212,7 +211,7 @@ class OOOP:
     def all(self, model, query=[]):
         """ return all ids """
         if self.debug:
-            logger.debug("[all]:", model, query)
+            logger.debug("[all]: %s %s" % (model, query))
         return self.search(model, query)
 
     def insert_items(self, model, data):
@@ -223,7 +222,7 @@ class OOOP:
             if not self.search(model, query): # check if it's already present
                 self.create(model, d)
             else:
-                logger.debug('Warning: %s already in %s model: %s' % (item, model))
+                logger.debug('Warning: %s already in %s model: %s' % (item, model, query))
 
     def load_models(self):
         models = self.read_all(OOOPMODELS)
@@ -298,15 +297,21 @@ class List:
         self.data = data
         self.index = -1
 
-    def __iter__(self):
-        return self
-
-    def next(self):
+    # python 3.x
+    def __next__(self):
         self.index += 1
         if self.index == len(self.objects):
             self.index = -1
             raise StopIteration
         return self.__getitem__(self.index)
+    
+    # python 2.7.x
+    def next(self):
+        return self.__next__()
+
+    # see next
+    def __iter__(self):
+        return self
 
     def delete(self):
         if self.parent:
@@ -323,7 +328,7 @@ class List:
         return List(self.manager, self.objects[low:high], self, low, high, data=self.data, model=self.model)
 
     def __getitem__(self, offset):
-        if type(self.objects[offset]) != types.IntType:
+        if not isinstance(self.objects[offset], int):
             return self.objects[offset]
         else:
             #if type(data) != Types.StringType: # data != model
@@ -542,7 +547,7 @@ class Data(object):
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
-            if data[name]: # TODO: review this
+            if name in data: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
                 key = '%s:%i' % (relation, data[name][0])
                 if key in self.INSTANCES.keys():
@@ -560,7 +565,7 @@ class Data(object):
                 self.__dict__['__%s' % name] = data[name]
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
-                for i in xrange(len(data[name])):
+                for i in range(len(data[name])):
                     key = '%s:%i' % (relation, data[name][i])
                     if key in self.INSTANCES.keys():
                         self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])])
@@ -574,17 +579,17 @@ class Data(object):
             else:
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
-        elif ttype == "datetime" and data[name]:
+        elif ttype == "datetime" and name in data:
             p1, p2 = data[name].split(".", 1)
             d1 = datetime.strptime(p1, "%Y-%m-%d %H:%M:%S")
             ms = int(p2.ljust(6,'0')[:6])
             d1.replace(microsecond=ms)
             self.__dict__[name] = d1
-        elif ttype == "date" and data[name]:
+        elif ttype == "date" and name in data:
             self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], "%Y-%m-%d").toordinal())
         else:
             # axelor conector workaround
-            if type(data) == types.ListType:
+            if isinstance(data, list):
                 data = data[0]
             self.__dict__[name] = data[name]
 
@@ -630,8 +635,8 @@ class Data(object):
 
 
         if self._ooop.debug:
-            logger.debug("model:", self._model)
-            logger.debug("data:", data)
+            logger.debug("model: %s" % self._model)
+            logger.debug("data: %s" % data)
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
