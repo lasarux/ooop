@@ -73,47 +73,15 @@ class dict2obj(dict):
     def __getattr__(self, key):
         return self[key]
 
-class objectsock_mock():
-    """mock for objectsock to be able to use the OOOP as a module inside of openerp"""
-    def __init__(self, parent, cr):
-        self.parent = parent
-        self.cr = cr
-
-    def execute(self, *args, **kargs):
-        """mocking execute function"""
-        if len(args) == 7:
-            (dbname, uid, pwd, model, action, vals, fields) = args
-        elif len(args) == 6:
-            (dbname, uid, pwd, model, action, vals) = args
-        elif len(args) == 5:
-            (dbname, uid, pwd, model, action) = args
-
-        _model = self.parent.pool.get(model)
-
-        if action == 'create':
-            return _model.create(self.cr, uid, vals)
-        elif action == 'unlink':
-            return _model.unlink(self.cr, uid, vals)
-        elif action == 'write':
-            return _model.write(self.cr, uid, vals, fields)
-        elif action == 'read' and len(args) == 7:
-            return _model.read(self.cr, uid, vals, fields)
-        elif action == 'read':
-            return _model.read(self.cr, uid, vals)
-        elif action == 'search':
-            return _model.search(self.cr, uid, vals)
-        else:
-            return getattr(_model, action)(self.cr, uid) # is callable
-
 
 class OOOP:
-    """ Main class to manage xml-rpc communication with openerp-server """
-    def __init__(self, user='admin', pwd='admin', dbname='openerp',
+    """ Main class to manage xml-rpc communication with odoo server """
+    def __init__(self, user='admin', pwd='admin', dbname='odoo',
                  uri='http://localhost', port=8069, debug=False,
                  exe=False, active=True, readonly=False, **kwargs):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
-        self.dbname = dbname   # default: 'openerp'
+        self.dbname = dbname   # default: 'odoo'
         self.uri = uri
         self.port = port
         self.debug = debug
@@ -127,13 +95,7 @@ class OOOP:
         self.fields = {}
         self.readonly = readonly
 
-        #has to be uid, cr, parent (the openerp model to get the pool)
-        if len(kwargs) == 3:
-            self.uid = kwargs['uid']
-            self.objectsock = objectsock_mock(kwargs['parent'], kwargs['cr'])
-        else:
-            self.connect()
-
+        self.connect()
         self.load_models()
 
     def connect(self):
@@ -372,7 +334,7 @@ class Manager:
 
     def all(self, fields=[], offset=0, limit=999999, as_list=False):
         ids = self._ooop.all(self._model)
-        if not ids: # CHECKTHIS
+        if not ids: # TODO: check this
             return []
         data = self._ooop.read(self._model, ids[offset:limit], fields)
         if as_list:
@@ -402,12 +364,6 @@ class Manager:
 
     def exclude(self, *args, **kargs):
         pass # TODO
-
-    def export(self, filename=None, filetype="jpg", deep=0):
-        """docstring for export"""
-        if not filename:
-            filename = self._model
-        self._ooop.export(filename=filename, filetype=filetype, model=self._model, deep=deep)
 
     def __repr__(self):
         return '<%s> manager instance' % self._model
@@ -559,7 +515,7 @@ class Data(object):
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
-                self.__dict__[name] = None # TODO: empty openerp data object
+                self.__dict__[name] = None # TODO: empty odoo data object
         elif ttype in ('one2many', 'many2many'):
             if data[name]:
                 self.__dict__['__%s' % name] = data[name]
@@ -597,7 +553,7 @@ class Data(object):
             return self.__dict__[name]
 
     def save(self):
-        """ save attributes object data into openerp
+        """ save attributes object data into odoo
             return: object id """
 
         data = {}
