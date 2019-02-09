@@ -20,7 +20,7 @@ setup(
     version = version,
     description = 'OpenObject on Python, a library to connect with Open ERP.',
     author = 'Pedro Gracia',
-    author_email = 'lasarux@neuroomante.com',
+    author_email = 'pedro.gracia@impulzia.com',
     license = 'GPLv3+',
     download_url = 'https://www.github.com/lasarux/ooop',
     py_modules = ['ooop'],

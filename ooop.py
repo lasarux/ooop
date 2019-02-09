@@ -381,6 +381,7 @@ class Data(object):
         self._data = data
         self._fields = fields
         self.INSTANCES = {}
+        self.WRITES = {}
         if ref:
             self._ref = ref
         else:
@@ -472,7 +473,8 @@ class Data(object):
 
     def __setattr__(self, field, value):
         if 'fields' in self.__dict__:
-            if field in self.fields.keys():
+            if field in self.fields:
+                self.WRITES[field] = value
                 ttype = self.fields[field]['ttype']
                 if value:
                     if ttype =='many2one':
@@ -484,7 +486,7 @@ class Data(object):
 
     def __getattr__(self, field):
         """ put values into object dynamically """
-        if field in self.__dict__.keys():
+        if field in self.__dict__:
             return self.__dict__[field]
 
         try:
@@ -555,9 +557,9 @@ class Data(object):
     def save(self):
         """ save attributes object data into odoo
             return: object id """
-
         data = {}
-        for i in self.fields.values():
+        for w in self.WRITES:
+            i = self.fields[w]
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
@@ -602,6 +604,7 @@ class Data(object):
 
         # update cache
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
+        self.WRITES = {}
         return self._ref
 
 
