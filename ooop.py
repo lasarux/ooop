@@ -504,7 +504,7 @@ class Data(object):
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
-            if name in data: # TODO: review this
+            if name in data and data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
                 key = '%s:%i' % (relation, data[name][0])
                 if key in self.INSTANCES.keys():
