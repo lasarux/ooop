@@ -43,7 +43,6 @@ OPERATORS = {
     'gt': '>',
     'gte': '>=',
     'ne': '!=',
-    'ne': '<>',
     'like': 'like',
     'ilike': 'ilike',
     'eq_like': '=like',
