@@ -538,13 +538,17 @@ class Data(object):
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
         elif ttype == "datetime" and name in data:
-            p1, p2 = data[name].split(".", 1)
-            d1 = datetime.strptime(p1, "%Y-%m-%d %H:%M:%S")
-            ms = int(p2.ljust(6,'0')[:6])
-            d1.replace(microsecond=ms)
+            if '.' in data[name]:
+                p1, p2 = data[name].split('.', 1)
+                d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
+                ms = int(p2.ljust(6,'0')[:6])
+                d1.replace(microsecond=ms)
+            else:
+                p1 = data[name]
+                d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
             self.__dict__[name] = d1
         elif ttype == "date" and name in data:
-            self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], "%Y-%m-%d").toordinal())
+            self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
         else:
             # axelor conector workaround
             if isinstance(data, list):
