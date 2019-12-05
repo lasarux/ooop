@@ -407,12 +407,12 @@ class Data(object):
         else:
             # get default values
             default_values = {}
-            field_names = self.fields.keys()
+            field_names = list(self.fields.keys())
             default_values = self._manager.default_get(field_names)
             # convert DateTime instance to datetime.datetime object
             for i in default_values:
                 if self.fields[i]['ttype'] == 'datetime':
-                    t = default_values[i].timetuple()
+                    t = datetime.fromisoformat(default_values[i]).timetuple()
                     default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
             # active by default ?
             if self._ooop.active:
@@ -537,24 +537,27 @@ class Data(object):
                 self.__dict__[name] = List(Manager(relation, self._ooop),
                                            data=self, model=relation)
         elif ttype == "datetime" and name in data:
-            if '.' in data[name]:
-                p1, p2 = data[name].split('.', 1)
-                d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
-                ms = int(p2.ljust(6,'0')[:6])
-                d1.replace(microsecond=ms)
-            else:
-                p1 = data[name]
-                d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
-            self.__dict__[name] = d1
+            if data[name]:
+                if '.' in data[name]:
+                    p1, p2 = data[name].split('.', 1)
+                    d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
+                    ms = int(p2.ljust(6,'0')[:6])
+                    d1.replace(microsecond=ms)
+                else:
+                    p1 = data[name]
+                    d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
+                self.__dict__[name] = d1
         elif ttype == "date" and name in data:
-            self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
+            # check if no boolean
+            if data[name]:
+                self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
         else:
             # axelor conector workaround
             if isinstance(data, list):
                 data = data[0]
             self.__dict__[name] = data[name]
 
-        if self.__dict__[name]:
+        if name in self.__dict__:
             return self.__dict__[name]
 
     def save(self):
