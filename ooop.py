@@ -616,9 +616,7 @@ class Data(object):
 
     def delete(self):
         if self._ref > 0:
-            self._ooop.unlink(self._model, self._ref)
-        #else:
-        #    pass # TODO
+            self._ooop.unlink(self._model, [self._ref])
         remove(self)
 
     # TODO: to develop a more clever save function
