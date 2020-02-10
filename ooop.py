@@ -487,7 +487,6 @@ class Data(object):
         """ put values into object dynamically """
         if field in self.__dict__:
             return self.__dict__[field]
-
         try:
             data = {field: self._data[field]}
         except:
@@ -504,7 +503,8 @@ class Data(object):
         ttype = self.fields[field]['ttype']
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
-            if name in data and data[name]: # TODO: review this
+            data = data[0]
+            if name in data: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
                 key = '%s:%i' % (relation, data[name][0])
                 if key in self.INSTANCES.keys():
@@ -512,16 +512,17 @@ class Data(object):
                 else:
                     # TODO: use a Manager instance, not Data
                     instance = Data(Manager(relation, self._ooop),
-                                    data[name][0], relation, data=self)
+                        data[name][0], relation, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
                 self.__dict__[name] = None # TODO: empty odoo data object
         elif ttype in ('one2many', 'many2many'):
-            if data[name]:
+            data = data[0]
+            if name in data:
                 self.__dict__['__%s' % name] = data[name]
                 self.__dict__[name] = List(Manager(relation, self._ooop),
-                                           data=self, model=relation)
+                    data=self, model=relation)
                 for i in range(len(data[name])):
                     key = '%s:%i' % (relation, data[name][i])
                     if key in self.INSTANCES.keys():
