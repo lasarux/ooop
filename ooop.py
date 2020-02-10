@@ -95,7 +95,10 @@ class OOOP:
         self.readonly = readonly
 
         self.connect()
-        self.load_models()
+        try:
+            self.load_models()
+        except:
+            print('Error loading modules. You have to load models manually.')
 
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
@@ -184,6 +187,11 @@ class OOOP:
                 self.create(model, d)
             else:
                 logger.debug('Warning: %s already in %s model: %s' % (item, model, query))
+
+    def add_model(self, model):
+        # experimental
+        self.models[model] = model
+        self.__dict__[self.normalize_model_name(model)] = Manager(model, self)
 
     def load_models(self):
         models = self.read_all(OOOPMODELS)
