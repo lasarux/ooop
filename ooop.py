@@ -189,7 +189,7 @@ class OOOP:
             else:
                 logger.debug('Warning: %s already in %s model: %s' % (item, model, query))
 
-    def print(self, model):
+    def add_model(self, model):
         # experimental
         self.models[model] = model
         self.__dict__[self.normalize_model_name(model)] = Manager(model, self)
