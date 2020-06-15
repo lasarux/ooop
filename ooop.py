@@ -31,7 +31,7 @@ from datetime import datetime, date
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.2.4"
+__version__ = "0.3.0"
 
 logger = logging.getLogger(__name__)
 
@@ -149,7 +149,8 @@ class OOOP:
         """ update register """
         if self.debug:
             logger.debug("[read]: %s %s %s" % (model, ids, fields))
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        return res
 
     def read_all(self, model, fields=[]):
         """ update register """
@@ -188,7 +189,7 @@ class OOOP:
             else:
                 logger.debug('Warning: %s already in %s model: %s' % (item, model, query))
 
-    def add_model(self, model):
+    def print(self, model):
         # experimental
         self.models[model] = model
         self.__dict__[self.normalize_model_name(model)] = Manager(model, self)
@@ -457,19 +458,40 @@ class Data(object):
     def get_values(self):
         """ get values of fields with no relations """
         if not self._data:
-            data = self._ooop.read(self._model, self._ref, self._fields)
+            fields = [i for i in self.fields.keys() if self.fields[i]['ttype'] not in ['many2one', 'one2many', 'many2many']]
+            data = self._ooop.read(self._model, self._ref, fields)
             if not data:
                 raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
             else:
-                self._data = data
-
+                self._data = data[0]
+        
         for i in self.fields.values():
             name, ttype, relation = i['name'], i['ttype'], i['relation']
-            if not ttype in ('one2many', 'many2one', 'many2many'):
-                hasattr(self,name) # use __getattr__ to trigger load
-            else:
-                pass # TODO: to load related fields as proxies to objects
 
+            # CAUTION!
+            # hasattr(self,name) # use __getattr__ to trigger load
+
+            if not ttype in ('one2many', 'many2one', 'many2many'):
+                
+                if ttype == "datetime" and name in self._data:
+                    if self._data[name]:
+                        if '.' in self._data[name]:
+                            p1, p2 = self._data[name].split('.', 1)
+                            d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
+                            ms = int(p2.ljust(6,'0')[:6])
+                            d1.replace(microsecond=ms)
+                        else:
+                            p1 = self._data[name]
+                            d1 = datetime.strptime(p1, '%Y-%m-%d %H:%M:%S')
+                        self.__dict__[name] = d1
+                elif ttype == "date" and name in self._data:
+                    # check if no boolean
+                    if self._data[name]:
+                        self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
+                else:
+
+                    self.__dict__[name] = self._data[name]
+                    
     def __print__(self, sort=True):
         if sort:
             fields = sorted(self.fields)
@@ -512,15 +534,15 @@ class Data(object):
         relation = self.fields[field]['relation']
         if ttype == 'many2one':
             data = data[0]
-            if name in data: # TODO: review this
+            if name in data and data[name]: # TODO: review this
                 self.__dict__['__%s' % name] = data[name]
                 key = '%s:%i' % (relation, data[name][0])
-                if key in self.INSTANCES.keys():
+                if key in self.INSTANCES:
                     self.__dict__[name] = self.INSTANCES[key]
                 else:
                     # TODO: use a Manager instance, not Data
                     instance = Data(Manager(relation, self._ooop),
-                        data[name][0], relation, data=self)
+                        data[name][0], relation) #, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
@@ -538,7 +560,7 @@ class Data(object):
                     else:
                         # TODO: use a Manager instance, not Data
                         instance = Data(Manager(relation, self._ooop),
-                                        data[name][i], data=self,
+                                        data[name][i], #data=self,
                                         model=relation)
                         self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
@@ -579,8 +601,6 @@ class Data(object):
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
                     if ttype == 'date' and self.__dict__[name]:
-                        #print name, ttype, relation
-                        #print self.__dict__[name]
                         data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
                     elif ttype == 'datetime' and self.__dict__[name]:
                         data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
