@@ -487,7 +487,7 @@ class Data(object):
                 elif ttype == "date" and name in self._data:
                     # check if no boolean
                     if self._data[name]:
-                        self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
+                        self.__dict__[name] = date.fromordinal(datetime.strptime(self._data[name], '%Y-%m-%d').toordinal())
                 else:
 
                     self.__dict__[name] = self._data[name]
