@@ -56,6 +56,9 @@ OPERATORS = {
 def remove(object):
     del object
 
+def _args(*args, **kwargs):
+    return args, kwargs
+
 # http://stackoverflow.com/questions/1305532/convert-python-dict-to-object (last one)
 class dict2obj(dict):
     def __init__(self, dict_):
@@ -126,7 +129,8 @@ class OOOP:
             raise Exception('readonly connection')
         else:
             if context:
-                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, {'context': context})
+                args, kwargs = _args(data, context=context)
+                return self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'create', args, kwargs)
             else:
                 return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
@@ -147,7 +151,8 @@ class OOOP:
             raise Exception('readonly connection')
         else:
             if context:
-                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, {'context': context})
+                args, kwargs = _args(ids, value, context=context)
+                return self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'write', args, kwargs)
             else:
                 return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
 
