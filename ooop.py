@@ -126,7 +126,7 @@ class OOOP:
             raise Exception('readonly connection')
         else:
             if context:
-                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', {'context': context})
+                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data, {'context': context})
             else:
                 return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
