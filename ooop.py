@@ -118,14 +118,17 @@ class OOOP:
         else:
             return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
 
-    def create(self, model, data):
+    def create(self, model, data, context=None):
         """ create a new register """
         if self.debug:
             logger.debug("[create]: %s %s" % (model, data))
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+            if context:
+                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', {'context': context})
+            else:
+                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
 
     def unlink(self, model, ids):
         """ remove register """
@@ -136,14 +139,17 @@ class OOOP:
         else:
             return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
 
-    def write(self, model, ids, value):
+    def write(self, model, ids, value, context=None):
         """ update register """
         if self.debug:
             logger.debug("[write]: %s %s %s" % (model, ids, value))
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+            if context:
+                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value, {'context': context})
+            else:
+                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
 
     def read(self, model, ids, fields=[]):
         """ update register """
@@ -591,7 +597,7 @@ class Data(object):
         if name in self.__dict__:
             return self.__dict__[name]
 
-    def save(self):
+    def save(self, context=None):
         """ save attributes object data into odoo
             return: object id """
         data = {}
@@ -633,9 +639,11 @@ class Data(object):
 
         # create or write the object
         if self._ref > 0 and not self._copy: # same object
-            self._ooop.write(self._model, self._ref, data)
+            self._ooop.write(self._model, self._ref, data, context=context)
         else:
-            self._ref = self._ooop.create(self._model, data)
+            self._ref = self._ooop.create(self._model, data, context=context)
+
+        
 
         # update cache
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
