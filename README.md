@@ -130,6 +130,15 @@ Creating new
   >>> n.save()
 </code></pre>
 
+**with context**
+
+To pass context in the call:
+
+<pre><code>
+  >>> n = o.ResPartner.new()
+  >>> n.name = 'Partner created with OOOP'
+  >>> n.save(context={'context-key':context-value})
+</pre></code>
 
 **with related objects**
 
