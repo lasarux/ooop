@@ -100,8 +100,8 @@ class OOOP:
         self.connect()
         try:
             self.load_models()
-        except:
-            print('Error loading modules. You have to load models manually.')
+        except Exception as err:
+            print('An error has occurried. Maybe you have to load models manually...', err)
 
     def connect(self):
         """login and sockets to xmlrpc services: common, object and report"""
