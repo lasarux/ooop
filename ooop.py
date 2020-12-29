@@ -640,11 +640,18 @@ class Data(object):
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:
-                        data[name] = [(6, 0, [i.save() for i in self.__dict__[name]])]
-                        # update __name and INSTANCES (cache)
-                        self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
-                        for i in self.__dict__[name]:
-                            self.INSTANCES['%s:%s' % (relation, i._ref)] = i
+                        if isinstance(self.__dict__[name][0], int):
+                            data[name] = [(6, 0, [i for i in self.__dict__[name]])]
+                            # update __name and INSTANCES (cache)
+                            self.__dict__['__%s' % name] = [i for i in self.__dict__[name]] # REVIEW: two loops?
+                            for i in self.__dict__[name]:
+                                self.INSTANCES['%s:%s' % (relation, i)] = i
+                        else:
+                            data[name] = [(6, 0, [i.save() for i in self.__dict__[name]])]
+                            # update __name and INSTANCES (cache)
+                            self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
+                            for i in self.__dict__[name]:
+                                self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                 elif ttype == 'many2one':
                     if self.__dict__[name]:
                         if type(self.__dict__[name]) is int:
