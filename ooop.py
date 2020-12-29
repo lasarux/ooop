@@ -31,7 +31,7 @@ from datetime import datetime, date
 
 __author__ = "Pedro Gracia <pedro.gracia@impulzia.com>"
 __license__ = "GPLv3+"
-__version__ = "0.3.1"
+__version__ = "0.3.2"
 
 logger = logging.getLogger(__name__)
 
@@ -119,7 +119,8 @@ class OOOP:
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+        return res
 
     def create(self, model, data, context=None):
         """ create a new register """
@@ -130,9 +131,10 @@ class OOOP:
         else:
             if context:
                 args, kwargs = _args(data, context=context)
-                return self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'create', args, kwargs)
+                res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'create', args, kwargs)
             else:
-                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+                res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+            return res
 
     def unlink(self, model, ids):
         """ remove register """
@@ -141,7 +143,8 @@ class OOOP:
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+        return res
 
     def write(self, model, ids, value, context=None):
         """ update register """
@@ -152,28 +155,40 @@ class OOOP:
         else:
             if context:
                 args, kwargs = _args(ids, value, context=context)
-                return self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'write', args, kwargs)
+                res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'write', args, kwargs)
             else:
-                return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+                res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+        return res
 
-    def read(self, model, ids, fields=[]):
+    def read(self, model, ids, fields=[], context=None):
         """ update register """
         if self.debug:
             logger.debug("[read]: %s %s %s" % (model, ids, fields))
-        res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+        
+        if context:
+            args, kwargs = _args(ids, fields, context=context)
+            res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'read', args, kwargs)
+        else:
+            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
         return res
 
-    def read_all(self, model, fields=[]):
+    def read_all(self, model, fields=[], context=None):
         """ update register """
         if self.debug:
             logger.debug("[read_all]: %s %s" % (model, fields))
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        return res
 
-    def search(self, model, query):
+    def search(self, model, query, context=None):
         """ return ids that match with 'query' """
         if self.debug:
             logger.debug("[search]: %s %s" % (model, query))
-        return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+        if context:
+            args, kwargs = _args(query, context=context)
+            res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'search', args, kwargs)
+        else:
+            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+        return res
 
     # TODO: verify if remove this
     def custom_execute(self, model, ids, remote_method, data):
@@ -262,7 +277,7 @@ class List:
     #FIXME: reorder args
     #TODO: cache
     def __init__(self, manager, objects=None, parent=None,
-                 low=None, high=None, data=None, model=None):
+                 low=None, high=None, data=None, model=None, context=None):
         self.manager = manager  # List or Manager instance
         if model:
             self.model = model
@@ -277,6 +292,7 @@ class List:
         self.high = high
         self.data = data
         self.index = -1
+        self.context = context
 
     # python 3.x
     def __next__(self):
@@ -306,7 +322,7 @@ class List:
         self.objects.append(value)
 
     def __getslice__(self, low, high):
-        return List(self.manager, self.objects[low:high], self, low, high, data=self.data, model=self.model)
+        return List(self.manager, self.objects[low:high], self, low, high, data=self.data, model=self.model, context=self.context)
 
     def __getitem__(self, offset):
         if not isinstance(self.objects[offset], int):
@@ -314,17 +330,21 @@ class List:
         else:
             #if type(data) != Types.StringType: # data != model
             #    self.data.INSTANCES['%s:%s' % (self.data.model, self.objects[offset])] = instance # TODO: method to add instances
-            self.objects[offset] = Data(self.manager, self.objects[offset], model=self.model)
+            self.objects[offset] = Data(self.manager, self.objects[offset], model=self.model, context=self.context)
             return self.objects[offset]
 
     def __len__(self):
         return len(self.objects)
 
     def __repr__(self):
-        return '<Objects from %s> %i elements' % (self.model, len(self.objects))
-
+        if len(self.objects):
+            res = '<Objects from %s> %i elements with context: %s' % (self.model, len(self.objects), self.context)
+        else:
+            res = '<Empty>'
+        return res
 
 class Manager:
+    # TODO: self.context ?
     def __init__(self, model, ooop):
         self._model = model
         self._ooop = ooop
@@ -341,8 +361,8 @@ class Manager:
     def copy(self, ref):
         return Data(self, ref, copy=True)
 
-    def read(self, ids, fields=[]):
-        data = self._ooop.read(self._model, ids, fields)
+    def read(self, ids, fields=[], context=None):
+        data = self._ooop.read(self._model, ids, fields, context=context)
         res = []
         for item in data:
             row = {'id': item['id']}
@@ -351,11 +371,11 @@ class Manager:
             res.append(dict2obj(row))
         return res
 
-    def all(self, fields=[], offset=0, limit=999999, as_list=False):
-        ids = self._ooop.all(self._model)
+    def all(self, fields=[], offset=0, limit=999999, as_list=False, context=None):
+        ids = self._ooop.all(self._model, context=context)
         if not ids: # TODO: check this
             return []
-        data = self._ooop.read(self._model, ids[offset:limit], fields)
+        data = self._ooop.read(self._model, ids[offset:limit], fields, context=context)
         if as_list:
             res = []
             for item in data:
@@ -364,9 +384,9 @@ class Manager:
                     row[i] = item[i]
                 res.append(dict2obj(row))
             return res
-        return List(self, ids) #manager, object ids
+        return List(self, ids, context=context) #manager, object ids
 
-    def filter(self, fields=[], as_list=False, **kargs):
+    def filter(self, fields=[], as_list=False, context=None, **kargs):
         q = [] # query dict
         for key, value in kargs.items():
             if not '__' in key:
@@ -376,10 +396,10 @@ class Manager:
                 op = OPERATORS[key[i+2:]]
                 key = key[:i]
             q.append(('%s' % key, op, value))
-        ids = self._ooop.search(self._model, q)
+        ids = self._ooop.search(self._model, q, context=context)
         if as_list:
-            return self.read(ids, fields)
-        return List(self, ids)
+            return self.read(ids, fields, context=context)
+        return List(self, ids, context=context)
 
     def exclude(self, *args, **kargs):
         pass # TODO
@@ -389,7 +409,7 @@ class Manager:
 
 
 class Data(object):
-    def __init__(self, manager, ref=None, model=None, copy=False, data=None, fields=[], *args, **kargs):
+    def __init__(self, manager, ref=None, model=None, copy=False, data=None, fields=[], context=None, *args, **kargs):
         if not model:
             self._model = manager._model # model name # FIXME!
         else:
@@ -399,6 +419,7 @@ class Data(object):
         self._copy = copy
         self._data = data
         self._fields = fields
+        self.context = context
         self.INSTANCES = {}
         self.WRITES = {}
         if ref:
@@ -449,13 +470,13 @@ class Data(object):
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
                 if name in keys:
-                    self.__dict__[name] = List(Manager(relation, self._ooop), kargs[name], data=self, model=relation)
+                    self.__dict__[name] = List(Manager(relation, self._ooop), kargs[name], data=self, model=relation, context=self.context)
                 else:
-                    self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation)
+                    self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation, context=self.context)
             elif ttype == 'many2one':
                 if name in keys and kargs[name]:
                     # manager, ref=None, model=None, copy=False
-                    instance = Data(Manager(relation, self._ooop), kargs[name], relation)
+                    instance = Data(Manager(relation, self._ooop), kargs[name], relation, context=self.context)
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
                     self.__dict__[name] = instance
                 else:
@@ -470,7 +491,7 @@ class Data(object):
         """ get values of fields with no relations """
         if not self._data:
             fields = [i for i in self.fields.keys() if self.fields[i]['ttype'] not in ['many2one', 'one2many', 'many2many']]
-            data = self._ooop.read(self._model, self._ref, fields)
+            data = self._ooop.read(self._model, self._ref, fields, context=self.context)
             if not data:
                 raise AttributeError('Object %s(%i) doesn\'t exist.' % (self._model, self._ref))
             else:
@@ -532,7 +553,7 @@ class Data(object):
             data = {field: self._data[field]}
         except:
             if field in self.fields.keys():
-                data = self._ooop.read(self._model, self._ref, [field])
+                data = self._ooop.read(self._model, self._ref, [field], context=self.context)
             # Try a custom function
             if self._ooop.exe:
                 return lambda *a: self._ooop.execute(
@@ -553,7 +574,7 @@ class Data(object):
                 else:
                     # TODO: use a Manager instance, not Data
                     instance = Data(Manager(relation, self._ooop),
-                        data[name][0], relation) #, data=self)
+                        data[name][0], relation, context=self.context) #, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
@@ -563,7 +584,7 @@ class Data(object):
             if name in data:
                 self.__dict__['__%s' % name] = data[name]
                 self.__dict__[name] = List(Manager(relation, self._ooop),
-                    data=self, model=relation)
+                    data=self, model=relation, context=self.context)
                 for i in range(len(data[name])):
                     key = '%s:%i' % (relation, data[name][i])
                     if key in self.INSTANCES.keys():
@@ -572,12 +593,12 @@ class Data(object):
                         # TODO: use a Manager instance, not Data
                         instance = Data(Manager(relation, self._ooop),
                                         data[name][i], #data=self,
-                                        model=relation)
+                                        model=relation, context=self.context)
                         self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
                 self.__dict__[name] = List(Manager(relation, self._ooop),
-                                           data=self, model=relation)
+                                           data=self, model=relation, context=self.context)
         elif ttype == "datetime" and name in data:
             if data[name]:
                 if '.' in data[name]:
