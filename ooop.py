@@ -651,10 +651,7 @@ class Data(object):
                             self.__dict__['__%s' % name] = [i for i in self.__dict__[name]] # REVIEW: two loops?
                             for i in self.__dict__[name]:
                                 self.INSTANCES['%s:%s' % (relation, i)] = i
-     
-                        
-                        
-                elif ttype == 'many2one':
+                elif ttype in ['many2one', 'many2one_reference']:
                     if self.__dict__[name]:
                         if type(self.__dict__[name]) is int:
                             data[name] = self.__dict__[name]
