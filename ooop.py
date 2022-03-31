@@ -221,7 +221,7 @@ class OOOP:
         self.__dict__[self.normalize_model_name(model)] = Manager(model, self)
 
     def load_models(self):
-        models = self.read_all(OOOPMODELS)
+        models = self.read_all(OOOPMODELS, fields=['model'])
         for model in models:
             self.models[model['model']] = model
             self.__dict__[self.normalize_model_name(model['model'])] = Manager(model['model'], self)
