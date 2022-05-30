@@ -79,8 +79,9 @@ class dict2obj(dict):
 class OOOP:
     """ Main class to manage xml-rpc communication with odoo server """
     def __init__(self, user='admin', pwd='admin', dbname='odoo',
-                 uri='http://localhost', port=8069, debug=False,
-                 exe=False, active=True, readonly=False, **kwargs):
+            uri='http://localhost', port=8069, debug=False,
+            exe=False, active=True, readonly=False, **kwargs
+        ):
         self.user = user       # default: 'admin'
         self.pwd = pwd         # default: 'admin'
         self.dbname = dbname   # default: 'odoo'
@@ -119,7 +120,10 @@ class OOOP:
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, *args)
+            res = self.objectsock.execute(
+                self.dbname, self.uid, self.pwd,
+                model, *args
+            )
         return res
 
     def create(self, model, data, context=None):
@@ -131,9 +135,15 @@ class OOOP:
         else:
             if context:
                 args, kwargs = _args(data, context=context)
-                res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'create', args, kwargs)
+                res = self.objectsock.execute_kw(
+                    self.dbname, self.uid, self.pwd,
+                    model, 'create', args, kwargs
+                )
             else:
-                res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'create', data)
+                res = self.objectsock.execute(
+                    self.dbname, self.uid, self.pwd,
+                    model, 'create', data
+                )
             return res
 
     def unlink(self, model, ids):
@@ -143,7 +153,10 @@ class OOOP:
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'unlink', ids)
+            res = self.objectsock.execute(
+                self.dbname, self.uid, self.pwd,
+                model, 'unlink', ids
+            )
         return res
 
     def write(self, model, ids, value, context=None):
@@ -155,9 +168,15 @@ class OOOP:
         else:
             if context:
                 args, kwargs = _args(ids, value, context=context)
-                res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'write', args, kwargs)
+                res = self.objectsock.execute_kw(
+                    self.dbname, self.uid, self.pwd,
+                    model, 'write', args, kwargs
+                )
             else:
-                res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'write', ids, value)
+                res = self.objectsock.execute(
+                    self.dbname, self.uid, self.pwd,
+                    model, 'write', ids, value
+                )
         return res
 
     def read(self, model, ids, fields=[], context=None):
@@ -167,16 +186,25 @@ class OOOP:
         
         if context:
             args, kwargs = _args(ids, fields, context=context)
-            res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'read', args, kwargs)
+            res = self.objectsock.execute_kw(
+                self.dbname, self.uid, self.pwd,
+                model, 'read', args, kwargs
+            )
         else:
-            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', ids, fields)
+            res = self.objectsock.execute(
+                self.dbname, self.uid, self.pwd,
+                model, 'read', ids, fields
+            )
         return res
 
     def read_all(self, model, fields=[], context=None):
         """ update register """
         if self.debug:
             logger.debug("[read_all]: %s %s" % (model, fields))
-        res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'read', self.all(model), fields)
+        res = self.objectsock.execute(
+            self.dbname, self.uid, self.pwd,
+            model, 'read', self.all(model), fields
+        )
         return res
 
     def search(self, model, query, context=None):
@@ -185,9 +213,15 @@ class OOOP:
             logger.debug("[search]: %s %s" % (model, query))
         if context:
             args, kwargs = _args(query, context=context)
-            res = self.objectsock.execute_kw(self.dbname, self.uid, self.pwd, model, 'search', args, kwargs)
+            res = self.objectsock.execute_kw(
+                self.dbname, self.uid, self.pwd,
+                model, 'search', args, kwargs
+            )
         else:
-            res = self.objectsock.execute(self.dbname, self.uid, self.pwd, model, 'search', query)
+            res = self.objectsock.execute(
+                self.dbname, self.uid, self.pwd,
+                model, 'search', query
+            )
         return res
 
     # TODO: verify if remove this
@@ -197,7 +231,9 @@ class OOOP:
         if self.readonly:
             raise Exception('readonly connection')
         else:
-            return self.objectsock.execute(self.dbname, self.uid, self.pwd, model, ids, remote_method, data)
+            return self.objectsock.execute(
+                self.dbname, self.uid, self.pwd, model,
+                ids, remote_method, data)
 
     def all(self, model, query=[]):
         """ return all ids """
@@ -251,12 +287,24 @@ class OOOP:
         """ return a report """
         # TODO: test this function
         data = {'model': model, 'id': ref[0], 'report_type': report_type}
-        id_report = self.reportsock.report(self.dbname, self.uid, self.pwd, model, ref, data)
+        id_report = self.reportsock.report(
+            self.dbname,
+            self.uid,
+            self.pwd,
+            model,
+            ref,
+            data
+        )
         time.sleep(5)
         state = False
         attempt = 0
         while not state:
-            report = self.reportsock.report_get(self.dbname, self.uid, self.pwd, id_report)
+            report = self.reportsock.report_get(
+                self.dbname,
+                self.uid,
+                self.pwd,
+                id_report
+            )
             state = report['state']
             if not state:
                 time.sleep(1)
@@ -277,7 +325,8 @@ class List:
     #FIXME: reorder args
     #TODO: cache
     def __init__(self, manager, objects=None, parent=None,
-                 low=None, high=None, data=None, model=None, context=None):
+        low=None, high=None, data=None, model=None, context=None):
+        
         self.manager = manager  # List or Manager instance
         if model:
             self.model = model
@@ -355,8 +404,8 @@ class Manager:
     def get(self, ref): # TODO: only ids?
         return Data(self, ref)
 
-    def new(self, *args, **kargs):
-        return Data(self, *args, **kargs)
+    def new(self, values=None, *args, **kargs):
+        return Data(self, values=values, *args, **kargs)
 
     def copy(self, ref):
         return Data(self, ref, copy=True)
@@ -371,11 +420,18 @@ class Manager:
             res.append(dict2obj(row))
         return res
 
-    def all(self, fields=[], offset=0, limit=999999, as_list=False, context=None):
+    def all(self, fields=[], offset=0, limit=999999,
+        as_list=False, context=None):
+        
         ids = self._ooop.all(self._model, context=context)
         if not ids: # TODO: check this
             return []
-        data = self._ooop.read(self._model, ids[offset:limit], fields, context=context)
+        data = self._ooop.read(
+            self._model,
+            ids[offset:limit],
+            fields,
+            context=context
+        )
         if as_list:
             res = []
             for item in data:
@@ -409,7 +465,9 @@ class Manager:
 
 
 class Data(object):
-    def __init__(self, manager, ref=None, model=None, copy=False, data=None, fields=[], context=None, *args, **kargs):
+    def __init__(self, manager, ref=None, model=None, 
+        copy=False, data=None, fields=[], values=None, autosave=False, 
+        context=None, *args, **kargs):
         if not model:
             self._model = manager._model # model name # FIXME!
         else:
@@ -446,6 +504,7 @@ class Data(object):
         if ref:
             self.get_values()
         else:
+            # TODO: check if enters here in some point
             # get default values
             default_values = {}
             field_names = list(self.fields.keys())
@@ -454,7 +513,14 @@ class Data(object):
             for i in default_values:
                 if self.fields[i]['ttype'] == 'datetime':
                     t = datetime.fromisoformat(default_values[i]).timetuple()
-                    default_values[i] = datetime(t.tm_year, t.tm_mon, t.tm_mday, t.tm_hour, t.tm_min, t.tm_sec)
+                    default_values[i] = datetime(
+                        t.tm_year,
+                        t.tm_mon,
+                        t.tm_mday,
+                        t.tm_hour,
+                        t.tm_min,
+                        t.tm_sec
+                    )
             # active by default ?
             if self._ooop.active:
                 default_values['active'] = True
@@ -463,6 +529,13 @@ class Data(object):
             if self._ooop.debug:
                 logger.debug("default values: %s" % default_values)
 
+        # populate fields
+        if values:
+            for k, v in values.items():
+                self.__setattr__(k, v)
+            if autosave:
+                self.save()
+
     def init_values(self, *args, **kargs):
         """ initial values for object """
         keys = kargs.keys()
@@ -470,13 +543,29 @@ class Data(object):
             name, ttype, relation = i['name'], i['ttype'], i['relation']
             if ttype in ('one2many', 'many2many'): # these types use a list of objects
                 if name in keys:
-                    self.__dict__[name] = List(Manager(relation, self._ooop), kargs[name], data=self, model=relation, context=self.context)
+                    self.__dict__[name] = List(
+                        Manager(relation, self._ooop),
+                        kargs[name],
+                        data=self,
+                        model=relation,
+                        context=self.context
+                    )
                 else:
-                    self.__dict__[name] = List(Manager(relation, self._ooop), data=self, model=relation, context=self.context)
+                    self.__dict__[name] = List(
+                        Manager(relation, self._ooop),
+                        data=self,
+                        model=relation,
+                        context=self.context
+                    )
             elif ttype == 'many2one':
                 if name in keys and kargs[name]:
                     # manager, ref=None, model=None, copy=False
-                    instance = Data(Manager(relation, self._ooop), kargs[name], relation, context=self.context)
+                    instance = Data(
+                        Manager(relation, self._ooop),
+                        kargs[name],
+                        relation,
+                        context=self.context
+                    )
                     self.INSTANCES['%s:%s' % (relation, kargs[name])] = instance
                     self.__dict__[name] = instance
                 else:
@@ -553,7 +642,12 @@ class Data(object):
             data = {field: self._data[field]}
         except:
             if field in self.fields.keys():
-                data = self._ooop.read(self._model, self._ref, [field], context=self.context)
+                data = self._ooop.read(
+                    self._model,
+                    self._ref,
+                    [field],
+                    context=self.context
+                )
             # Try a custom function
             if self._ooop.exe:
                 return lambda *a: self._ooop.execute(
@@ -573,8 +667,12 @@ class Data(object):
                     self.__dict__[name] = self.INSTANCES[key]
                 else:
                     # TODO: use a Manager instance, not Data
-                    instance = Data(Manager(relation, self._ooop),
-                        data[name][0], relation, context=self.context) #, data=self)
+                    instance = Data(
+                        Manager(relation, self._ooop),
+                        data[name][0],
+                        relation,
+                        context=self.context
+                    ) #, data=self)
                     self.__dict__[name] = instance
                     self.INSTANCES[key] = instance
             else:
@@ -583,22 +681,35 @@ class Data(object):
             data = data[0]
             if name in data:
                 self.__dict__['__%s' % name] = data[name]
-                self.__dict__[name] = List(Manager(relation, self._ooop),
-                    data=self, model=relation, context=self.context)
+                self.__dict__[name] = List(
+                    Manager(relation, self._ooop),
+                        data=self,
+                        model=relation,
+                        context=self.context
+                    )
                 for i in range(len(data[name])):
                     key = '%s:%i' % (relation, data[name][i])
                     if key in self.INSTANCES.keys():
-                        self.__dict__[name].append(self.INSTANCES['%s:%s' % (relation, data[name][i])])
+                        self.__dict__[name].append(
+                            self.INSTANCES['%s:%s' % (relation, data[name][i])]
+                        )
                     else:
                         # TODO: use a Manager instance, not Data
-                        instance = Data(Manager(relation, self._ooop),
-                                        data[name][i], #data=self,
-                                        model=relation, context=self.context)
+                        instance = Data(
+                            Manager(relation, self._ooop),
+                            data[name][i], #data=self,
+                            model=relation,
+                            context=self.context
+                        )
                         self.__dict__[name].append(instance)
                         #self.INSTANCES['%s:%s' % (relation, data[name][i])] = instance
             else:
-                self.__dict__[name] = List(Manager(relation, self._ooop),
-                                           data=self, model=relation, context=self.context)
+                self.__dict__[name] = List(
+                    Manager(relation, self._ooop),
+                    data=self,
+                    model=relation,
+                    context=self.context
+                )
         elif ttype == "datetime" and name in data:
             if data[name]:
                 if '.' in data[name]:
@@ -613,12 +724,14 @@ class Data(object):
         elif ttype == "date" and name in data:
             # check if no boolean
             if data[name]:
-                self.__dict__[name] = date.fromordinal(datetime.strptime(data[name], '%Y-%m-%d').toordinal())
-        else:
-            # axelor conector workaround
-            if isinstance(data, list):
-                data = data[0]
-            self.__dict__[name] = data[name]
+                self.__dict__[name] = date.fromordinal(
+                    datetime.strptime(data[name], '%Y-%m-%d').toordinal()
+                )
+        # else:
+        #    # axelor conector workaround
+        #    if isinstance(data, list):
+        #        data = data[0]
+        #    self.__dict__[name] = data[name]
 
         if name in self.__dict__:
             return self.__dict__[name]
@@ -633,22 +746,35 @@ class Data(object):
             if name in self.__dict__.keys(): # else keep values in original object
                 if not '2' in ttype: # not one2many, many2one nor many2many
                     if ttype == 'date' and self.__dict__[name]:
-                        data[name] = date.strftime(self.__dict__[name], '%Y-%m-%d')
+                        data[name] = date.strftime(
+                            self.__dict__[name], '%Y-%m-%d'
+                        )
                     elif ttype == 'datetime' and self.__dict__[name]:
-                        data[name] = datetime.strftime(self.__dict__[name], '%Y-%m-%d %H:%M:%S')
-                    elif ttype in ('boolean', 'float', 'integer') or self.__dict__[name]:
+                        data[name] = datetime.strftime(
+                            self.__dict__[name], '%Y-%m-%d %H:%M:%S'
+                        )
+                    elif ttype in ('boolean', 'float', 'integer') or \
+                        self.__dict__[name]:
                         data[name] = self.__dict__[name]
                 elif ttype in ('one2many', 'many2many'):
                     if len(self.__dict__[name]) > 0:
                         # update __name and INSTANCES (cache)
                         try:
-                            data[name] = [(6, 0, [i._ref for i in self.__dict__[name]])]
-                            self.__dict__['__%s' % name] = [i._ref for i in self.__dict__[name]] # REVIEW: two loops?
+                            data[name] = [
+                                (6, 0, [i._ref for i in self.__dict__[name]])
+                            ]
+                            self.__dict__['__%s' % name] = [
+                                i._ref for i in self.__dict__[name]
+                            ] # REVIEW: two loops?
                             for i in self.__dict__[name]:
                                 self.INSTANCES['%s:%s' % (relation, i._ref)] = i
                         except:
-                            data[name] = [(6, 0, [i for i in self.__dict__[name]])]
-                            self.__dict__['__%s' % name] = [i for i in self.__dict__[name]] # REVIEW: two loops?
+                            data[name] = [
+                                (6, 0, [i for i in self.__dict__[name]])
+                            ]
+                            self.__dict__['__%s' % name] = [
+                                i for i in self.__dict__[name]
+                            ] # REVIEW: two loops?
                             for i in self.__dict__[name]:
                                 self.INSTANCES['%s:%s' % (relation, i)] = i
                 elif ttype in ['many2one', 'many2one_reference']:
@@ -656,12 +782,16 @@ class Data(object):
                         if type(self.__dict__[name]) is int:
                             data[name] = self.__dict__[name]
                             # update __name and INSTANCES (cache)
-                            self.__dict__['__%s' % name] = [self.__dict__[name], self.__dict__[name]]
+                            self.__dict__['__%s' % name] = [
+                                self.__dict__[name], self.__dict__[name]
+                            ]
                             self.INSTANCES['%s:%s' % (relation, self.__dict__[name])] = self.__dict__[name]
                         else:
                             data[name] = self.__dict__[name]._ref
                             # update __name and INSTANCES (cache)
-                            self.__dict__['__%s' % name] = [self.__dict__[name]._ref, self.__dict__[name].name]
+                            self.__dict__['__%s' % name] = [
+                                self.__dict__[name]._ref, self.__dict__[name].name
+                            ]
                             self.INSTANCES['%s:%s' % (relation, self.__dict__[name]._ref)] = self.__dict__[name]
 
 
@@ -675,13 +805,10 @@ class Data(object):
         else:
             self._ref = self._ooop.create(self._model, data, context=context)
 
-        
-
         # update cache
         self.INSTANCES['%s:%s' % (self._model, self._ref)] = self
         self.WRITES = {}
         return self._ref
-
 
     def delete(self):
         if self._ref > 0:
